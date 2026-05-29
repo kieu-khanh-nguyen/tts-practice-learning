@@ -121,6 +121,11 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 .rb.rb-dl{color:var(--accent-2);border-color:rgba(55,210,196,.3)}
 .rb.rb-split{font-size:14px}
 .empty{color:var(--muted);font-size:13px;text-align:center;padding:14px 0}
+.voice-badge{display:inline-flex;align-items:center;gap:4px;margin-top:5px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(55,210,196,.13);color:var(--accent-2);border:1px solid rgba(55,210,196,.25)}
+.voice-badge.male{background:rgba(255,122,69,.1);color:var(--accent);border-color:rgba(255,122,69,.2)}
+.rotate-preview{margin-top:10px;padding:10px 12px;border-radius:10px;background:#0e1118;border:1px solid var(--line);font-size:12px;color:var(--muted);line-height:1.8;display:none}
+.rotate-preview.show{display:block}
+.rotate-preview span.f{color:var(--accent-2)}.rotate-preview span.m{color:var(--accent)}
 
 details{margin-top:4px}
 details summary{color:var(--muted);font-size:12.5px;cursor:pointer;list-style:none}
@@ -192,6 +197,12 @@ details b{color:var(--text)}
       </div>
     </div>
     <div class="mt"><label class="label" for="voice">Giọng đọc</label><select id="voice"></select></div>
+    <label class="toggle mt" id="rotateToggleRow" style="display:none">
+      <input type="checkbox" id="voiceRotate">
+      <span class="knob"></span>
+      <span>🔄 Nữ↔Nam luân phiên theo câu</span>
+    </label>
+    <div class="rotate-preview" id="rotatePreview"></div>
     <button class="btn mt" id="loadBtn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
       <span>Nạp danh sách</span>
@@ -378,12 +389,15 @@ details b{color:var(--text)}
   const mergeBtn=$("#mergeBtn"),dlProgress=$("#dlProgress"),dlBar=$("#dlBar");
   const splitModal=$("#splitModal"),splitWordsEl=$("#splitWords"),splitPreviewEl=$("#splitPreview");
   const sp1El=$("#sp1"),sp2El=$("#sp2"),splitConfirmBtn=$("#splitConfirm");
+  const voiceRotateEl=$("#voiceRotate"),rotatePreviewEl=$("#rotatePreview"),rotateToggleRow=$("#rotateToggleRow");
 
   /* ===== State ===== */
   let currentLang="en",lines=[],activeIndex=-1,isPlaying=false,busy=false,speechVoices=[];
   let audioCtx=null,gainNode=null,limiterNode=null,currentSource=null,loopTimer=null,speechActive=false;
   let selectedSet=new Set();
   let splitModalIdx=-1,splitPt=-1,splitWords=[];
+  let voiceRotate=false;
+  const savedVoice={}; // saved voice per lang: {en:"en-US-AriaNeural", ...}
 
   /* ===== Worker/mode ===== */
   const workerUrl=()=>(workerEl.value||"").trim().replace(/\/+$/,"");
@@ -422,7 +436,63 @@ details b{color:var(--text)}
   async function idbGet(k){const d=await idb();if(!d)return null;return new Promise(res=>{try{const rq=d.transaction("clips").objectStore("clips").get(k);rq.onsuccess=()=>res(rq.result||null);rq.onerror=()=>res(null);}catch(e){res(null);}});}
   async function idbPut(rec){const d=await idb();if(!d)return;try{d.transaction("clips","readwrite").objectStore("clips").put(rec);}catch(e){}}
   async function idbClear(){const d=await idb();if(!d)return;try{d.transaction("clips","readwrite").objectStore("clips").clear();}catch(e){}}
-  const metaFor=t=>({text:t,voice:voiceEl.value,rate:parseInt(rateEl.value,10),pitch:parseInt(pitchEl.value,10)});
+  const metaFor=(t,voiceId)=>({text:t,voice:voiceId!==undefined?voiceId:voiceEl.value,rate:parseInt(rateEl.value,10),pitch:parseInt(pitchEl.value,10)});
+
+  /* ===== Voice rotation ===== */
+  function getGenderVoices(){
+    const voices=MS_VOICES[currentLang]||[];
+    const female=voices.filter(v=>v.label.toLowerCase().includes('nữ'));
+    const male=voices.filter(v=>v.label.toLowerCase().includes('nam'));
+    return{female,male};
+  }
+  function voiceIdForLine(i){
+    if(!voiceRotate||!isEdge())return voiceEl.value;
+    const{female,male}=getGenderVoices();
+    const hasFemale=female.length>0,hasMale=male.length>0;
+    if(!hasFemale&&!hasMale)return voiceEl.value;
+    const pairIdx=Math.floor(i/2);
+    if(i%2===0){// câu lẻ 1,3,5... → Nữ
+      if(!hasFemale)return male[pairIdx%male.length].id;
+      return female[pairIdx%female.length].id;
+    }else{// câu chẵn 2,4,6... → Nam
+      if(!hasMale)return female[pairIdx%female.length].id;
+      return male[pairIdx%male.length].id;
+    }
+  }
+  function voiceLabelForLine(i){
+    if(!voiceRotate||!isEdge())return null;
+    const{female,male}=getGenderVoices();
+    const hasFemale=female.length>0,hasMale=male.length>0;
+    if(!hasFemale&&!hasMale)return null;
+    const pairIdx=Math.floor(i/2);
+    if(i%2===0){
+      const v=hasFemale?female[pairIdx%female.length]:male[pairIdx%male.length];
+      return{label:v.label.split('·')[0].trim(),gender:'f'};
+    }else{
+      const v=hasMale?male[pairIdx%male.length]:female[pairIdx%female.length];
+      return{label:v.label.split('·')[0].trim(),gender:'m'};
+    }
+  }
+  function updateRotateUI(){
+    rotateToggleRow.style.display=isEdge()?'flex':'none';
+    if(!isEdge()||!voiceRotate){rotatePreviewEl.classList.remove('show');return;}
+    const{female,male}=getGenderVoices();
+    if(!female.length&&!male.length){rotatePreviewEl.innerHTML='<i>Ngôn ngữ này chưa đủ giọng Nữ/Nam để luân phiên.</i>';rotatePreviewEl.classList.add('show');return;}
+    let html='<b>Lịch phân giọng:</b><br>';
+    for(let i=0;i<Math.min(lines.length||8,8);i++){
+      const pairIdx=Math.floor(i/2);
+      if(i%2===0){
+        const v=female.length?female[pairIdx%female.length]:male[pairIdx%male.length];
+        html+=`<span class="f">Câu ${i+1}: ♀ ${v.label.split('·')[0].trim()}</span>　`;
+      }else{
+        const v=male.length?male[pairIdx%male.length]:female[pairIdx%female.length];
+        html+=`<span class="m">Câu ${i+1}: ♂ ${v.label.split('·')[0].trim()}</span>　`;
+      }
+      if((i+1)%2===0)html+='<br>';
+    }
+    if((lines.length||8)>8)html+='<span>… lặp lại</span>';
+    rotatePreviewEl.innerHTML=html;rotatePreviewEl.classList.add('show');
+  }
   const keyOf=m=>[m.voice,m.rate,m.pitch,m.text].join("\u00a6");
   function isCached(m){return mem.has(keyOf(m));}
   async function ensureClip(meta){
@@ -482,7 +552,7 @@ details b{color:var(--text)}
     if(activeIndex===i&&isPlaying){stopCurrent();status("Đã dừng.","",false);return;}
     if(busy)return;
     if(isEdge()){
-      busy=true;const meta=metaFor(lines[i]);
+      busy=true;const voiceId=voiceIdForLine(i);const meta=metaFor(lines[i],voiceId);
       try{ensureAudio();await audioCtx.resume();
         if(!isCached(meta))status("Câu "+(i+1)+" — đang tạo MP3…","",true);
         const clip=await ensureClip(meta);
@@ -502,7 +572,7 @@ details b{color:var(--text)}
     if(!isEdge()){status("Tải MP3 chỉ có ở chế độ Microsoft Neural.","err",false);return;}
     if(busy)return;busy=true;
     try{ensureAudio();await audioCtx.resume();status("Đang chuẩn bị MP3…","",true);
-      const meta=metaFor(lines[i]);const clip=await ensureClip(meta);
+      const voiceId=voiceIdForLine(i);const meta=metaFor(lines[i],voiceId);const clip=await ensureClip(meta);
       const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([clip.mp3],{type:"audio/mpeg"}));
       a.download=safeName(meta.text)+".mp3";document.body.appendChild(a);a.click();a.remove();
       setTimeout(()=>URL.revokeObjectURL(a.href),2000);
@@ -523,7 +593,7 @@ details b{color:var(--text)}
       for(let i=0;i<lines.length;i++){
         status("Đang tạo "+(i+1)+"/"+lines.length+"…","",true);
         dlBar.style.width=((i/lines.length)*80)+"%";
-        const clip=await ensureClip(metaFor(lines[i]));
+        const clip=await ensureClip(metaFor(lines[i],voiceIdForLine(i)));
         parts.push(clip.mp3);render();
         await new Promise(r=>setTimeout(r,60));
       }
@@ -547,7 +617,7 @@ details b{color:var(--text)}
     if(!isEdge()){status("Tạo sẵn chỉ dùng ở chế độ Microsoft Neural.","",false);return;}
     if(busy||!lines.length)return;busy=true;$("#pregenBtn").disabled=true;
     try{ensureAudio();await audioCtx.resume();let made=0;
-      for(let i=0;i<lines.length;i++){const meta=metaFor(lines[i]);
+      for(let i=0;i<lines.length;i++){const meta=metaFor(lines[i],voiceIdForLine(i));
         if(!isCached(meta)){status("Đang tạo "+(i+1)+"/"+lines.length+"…","",true);await ensureClip(meta);made++;render();await new Promise(r=>setTimeout(r,150));}}
       status(made?("Đã tạo sẵn "+made+" câu."):"Tất cả đã có trong cache.","ok",false);
     }catch(e){status(e.message||"Tạo trước thất bại.","err",false);}
@@ -687,9 +757,10 @@ details b{color:var(--text)}
     const b=$("#modeBadge");
     if(isEdge()){b.className="mode ms";$("#modeText").textContent="Microsoft Neural";}
     else{b.className="mode device";$("#modeText").textContent="Giọng thiết bị";}
+    updateRotateUI();
   }
   function refreshVoices(){
-    const prev=voiceEl.value;voiceEl.innerHTML="";
+    const prev=savedVoice[currentLang]||voiceEl.value;voiceEl.innerHTML="";
     if(isEdge()){
       (MS_VOICES[currentLang]||[]).forEach(v=>{const o=document.createElement("option");o.value=v.id;o.textContent=v.label;voiceEl.appendChild(o);});
     }else{
@@ -698,6 +769,7 @@ details b{color:var(--text)}
       vs.forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name+(v.localService?"":" · online");voiceEl.appendChild(o);});
     }
     if([...voiceEl.options].some(o=>o.value===prev))voiceEl.value=prev;
+    updateRotateUI();
   }
   function updateVolHint(){
     const v=parseInt(volEl.value,10);
@@ -711,7 +783,8 @@ details b{color:var(--text)}
     const edge=isEdge();listEl.innerHTML="";
     lines.forEach((line,i)=>{
       const active=(i===activeIndex&&isPlaying);
-      const cached=edge&&isCached(metaFor(line));
+      const voiceId=voiceIdForLine(i);
+      const cached=edge&&isCached(metaFor(line,voiceId));
       const sel=selectedSet.has(i);
 
       const row=document.createElement("div");
@@ -732,11 +805,16 @@ details b{color:var(--text)}
       // Main area (text + waveform)
       const main=document.createElement("div");main.className="row-main";
       const ptxt=document.createElement("div");ptxt.className="ptxt";ptxt.textContent=line;
+      // Voice badge when rotation is on
+      if(voiceRotate&&edge){
+        const vl=voiceLabelForLine(i);
+        if(vl){const badge=document.createElement("span");badge.className="voice-badge"+(vl.gender==='m'?" male":"");badge.textContent=(vl.gender==='f'?"♀ ":"♂ ")+vl.label;ptxt.appendChild(document.createElement("br"));ptxt.appendChild(badge);}
+      }
       main.appendChild(ptxt);
 
       // Waveform
       if(cached){
-        const key=keyOf(metaFor(line));
+        const key=keyOf(metaFor(line,voiceId));
         if(mem.has(key)){
           const wrap=document.createElement("div");wrap.className="waveform-wrap";
           const cv=document.createElement("canvas");cv.className="waveform-cv";
@@ -791,6 +869,7 @@ details b{color:var(--text)}
     stopAll();activeIndex=-1;selectedSet.clear();
     try{localStorage.setItem("ttsloop_text",raw);}catch(e){}
     if(!lines.length){status("Không tìm thấy câu nào. Mỗi câu một dòng.","err",false);render();return;}
+    updateRotateUI();
     status("Đã nạp "+lines.length+" câu. Bấm ▶ để luyện.","ok",false);render();
   }
 
@@ -800,6 +879,12 @@ details b{color:var(--text)}
     [...e.currentTarget.children].forEach(x=>x.classList.remove("active"));
     t.classList.add("active");currentLang=t.dataset.lang;refreshVoices();render();
   });
+  voiceEl.onchange=()=>{
+    savedVoice[currentLang]=voiceEl.value;
+    // If playing, stop so user hears new voice on next play
+    if(isPlaying){stopAll();activeIndex=-1;render();status("Đã đổi giọng. Bấm ▶ để nghe lại.","",false);}
+  };
+  voiceRotateEl.onchange=()=>{voiceRotate=voiceRotateEl.checked;updateRotateUI();render();};
   volEl.oninput=()=>{const v=parseInt(volEl.value,10);volVal.textContent=v+"%";volVal.classList.toggle("boost",v>100);applyVolume();updateVolHint();};
   rateEl.oninput=()=>{const v=parseInt(rateEl.value,10);rateVal.textContent=(v>=0?"+":"")+v+"%";};
   pitchEl.oninput=()=>{const v=parseInt(pitchEl.value,10);pitchVal.textContent=(v>=0?"+":"")+v;};
