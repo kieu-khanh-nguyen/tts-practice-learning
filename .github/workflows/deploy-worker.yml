@@ -1,0 +1,23 @@
+name: Deploy Cloudflare Worker
+
+on:
+  push:
+    branches:
+      - main # (Hoặc thay bằng 'master' nếu nhánh chính của bạn tên là master)
+    paths:
+      - 'worker.js'    # Chỉ chạy deploy khi file worker.js thay đổi
+      - 'wrangler.toml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - name: Lấy code từ Github
+        uses: actions/checkout@v4
+
+      - name: Triển khai lên Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
