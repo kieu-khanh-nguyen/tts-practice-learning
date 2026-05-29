@@ -1,5 +1,3 @@
-Here is an HTML document that implements a TTS sentence looping tool with advanced features like sentence selection, merging, splitting, waveform visualization, and batch MP3 downloads, supporting multiple voices.
-```html
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -8,229 +6,828 @@ Here is an HTML document that implements a TTS sentence looping tool with advanc
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%23ff7a45'/%3E%3Cpath d='M7 9v6h3l4 4V5l-4 4H7z' fill='%230c0e13'/%3E%3C/svg%3E">
-<title>TTS Loop · Luyện nghe nâng cao</title>
+<title>TTS Loop · Luyện nghe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#0c0e13;--panel:#14171f;--panel-2:#1b1f2a;--line:#272c39;--text:#eef1f7;--muted:#8b93a7;
-    --accent:#ff7a45;--accent-2:#37d2c4;--good:#5fd07a;--bad:#ff5c6c;--warn:#ffd166;--radius:18px;--shadow:0 24px 60px -28px rgba(0,0,0,.8)}
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;padding:0}
-  body{background:radial-gradient(900px 500px at 85% -10%,rgba(255,122,69,.16),transparent 60%),radial-gradient(700px 600px at -10% 110%,rgba(55,210,196,.12),transparent 55%),var(--bg);
-    color:var(--text);font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,sans-serif;min-height:100dvh;padding:24px 16px 64px;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:620px;margin:0 auto;position:relative;z-index:2}
-  header{margin-bottom:18px}
-  .brandrow{display:flex;align-items:center;gap:12px}
-  .logo{width:46px;height:46px;border-radius:13px;flex:none;background:linear-gradient(145deg,var(--accent),#ff9b6e);display:grid;place-items:center;box-shadow:0 10px 24px -10px var(--accent)}
-  .logo svg{width:26px;height:26px;display:block}
-  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:26px;line-height:1.05;margin:0;letter-spacing:-.02em}
-  .sub{color:var(--muted);font-size:13px;margin-top:3px}
-  .mode{display:inline-flex;align-items:center;gap:7px;margin-top:14px;padding:7px 12px;border-radius:999px;font-size:12.5px;font-weight:600;border:1px solid var(--line);background:#0e1118}
-  .mode.device .d{background:var(--accent-2)} .mode.ms .d{background:var(--accent)}
-  .card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px;box-shadow:var(--shadow)}
-  .label{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;font-weight:600}
-  textarea{width:100%;min-height:128px;resize:vertical;border-radius:14px;background:#0e1118;border:1px solid var(--line);color:var(--text);padding:14px;font-family:inherit;font-size:15px;line-height:1.6;outline:none}
-  textarea:focus{border-color:var(--accent)}
-  input[type=text]{width:100%;border-radius:12px;background:#0e1118;border:1px solid var(--line);color:var(--text);padding:12px 14px;font-family:inherit;font-size:14px;outline:none}
-  input[type=text]:focus{border-color:var(--accent)}
-  .pills{display:flex;flex-wrap:wrap;gap:8px}
-  .pill{flex:1 0 auto;text-align:center;padding:10px 8px;border-radius:12px;cursor:pointer;background:#0e1118;border:1px solid var(--line);color:var(--muted);font-weight:600;font-size:14px;transition:.16s;user-select:none}
-  .pill .flag{font-size:18px;display:block;margin-bottom:3px}
-  .pill.active{color:#0c0e13;background:var(--accent);border-color:var(--accent)}
-  select{width:100%;border-radius:12px;background:#0e1118;border:1px solid var(--line);color:var(--text);padding:12px 14px;font-family:inherit;font-size:15px;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%238b93a7' stroke-width='2'%3E%3Cpath d='M3 5l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
-  select:focus{border-color:var(--accent)}
-  .row{display:flex;gap:12px}.row>div{flex:1}.mt{margin-top:16px}
-  .btn{width:100%;border:none;border-radius:14px;cursor:pointer;padding:14px;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:16px;color:#0c0e13;background:linear-gradient(135deg,var(--accent),#ff9b6e);box-shadow:0 14px 34px -14px var(--accent);transition:.15s;display:flex;align-items:center;justify-content:center;gap:9px}
-  .btn:active{transform:translateY(1px)}.btn:disabled{opacity:.55;cursor:not-allowed}.btn svg{width:20px;height:20px}
-  .sliderhead{display:flex;justify-content:space-between;align-items:baseline}
-  .sliderval{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15px;color:var(--accent-2)}
-  .sliderval.boost{color:var(--accent)}
-  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:6px;background:var(--line);outline:none;margin:10px 0 2px}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--text);border:4px solid var(--accent);cursor:pointer;box-shadow:0 4px 12px -2px rgba(0,0,0,.6)}
-  .toggle{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font-size:14px}
-  .toggle input{display:none}
-  .knob{width:42px;height:25px;border-radius:20px;background:var(--line);position:relative;transition:.18s;flex:none}
-  .knob::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:.18s}
-  .toggle input:checked + .knob{background:var(--accent-2)}
-  .toggle input:checked + .knob::after{transform:translateX(17px)}
-  .listhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
-  .listhead h3{font-family:"Bricolage Grotesque",sans-serif;margin:0;font-size:17px;font-weight:700}
-  .toolbar{display:flex;gap:8px;flex-wrap:wrap}
-  .tbtn{border:1px solid var(--line);background:#0e1118;color:var(--text);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
-  .tbtn.primary{border-color:var(--accent-2);color:var(--accent-2)}
-  .tbtn:disabled{opacity:.5;cursor:not-allowed}
-  .nowloop{display:none;align-items:center;gap:11px;background:rgba(255,122,69,.1);border:1px solid var(--accent);border-radius:12px;padding:12px 14px;margin-bottom:6px}
-  .nowloop.show{display:flex}
-  .status{margin:12px 0 4px;font-size:13.5px;min-height:20px;color:var(--muted);display:flex;align-items:center;gap:8px}
-  .dot{width:9px;height:9px;border-radius:50%;background:var(--accent-2);flex:none;animation:pulse 1s infinite}
-  @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
-  .status.err{color:var(--bad)}.status.ok{color:var(--good)}
-  .prow{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;background:#0e1118;border:1px solid var(--line);margin-top:8px;transition:.15s}
-  .prow.active{border-color:var(--accent);background:rgba(255,122,69,.07)}
-  .prow.cached{border-left:3px solid var(--accent-2)}
-  .sel-cb{flex:none;width:20px;height:20px;accent-color:var(--accent);cursor:pointer}
-  .num{flex:none;width:28px;height:28px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line);display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--muted);font-family:"Bricolage Grotesque",sans-serif}
-  .ptxt{flex:1;min-width:0;font-size:14px;line-height:1.45;word-break:break-word}
-  .wave-cont{flex:none;width:70px;height:32px;margin-left:4px;cursor:pointer}
-  .wave-canvas{width:100%;height:100%;display:block;border-radius:6px;background:#07090e}
-  .prow button{flex:none;width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--panel-2);color:var(--text);cursor:pointer;display:grid;place-items:center}
-  .prow button svg{width:16px;height:16px}.prow button.dl{color:var(--accent-2)}
-  .empty{color:var(--muted);font-size:13px;text-align:center;padding:14px 0}
-  .batch-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-  details{margin-top:4px}
-  details summary{color:var(--muted);font-size:12.5px;cursor:pointer;list-style:none}
+:root{--bg:#0c0e13;--panel:#14171f;--panel-2:#1b1f2a;--line:#272c39;--text:#eef1f7;--muted:#8b93a7;
+  --accent:#ff7a45;--accent-2:#37d2c4;--good:#5fd07a;--bad:#ff5c6c;--warn:#ffd166;--radius:18px;--shadow:0 24px 60px -28px rgba(0,0,0,.8)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:radial-gradient(900px 500px at 85% -10%,rgba(255,122,69,.16),transparent 60%),radial-gradient(700px 600px at -10% 110%,rgba(55,210,196,.12),transparent 55%),var(--bg);
+  color:var(--text);font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,sans-serif;min-height:100dvh;padding:24px 16px 64px;-webkit-font-smoothing:antialiased}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.035;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{max-width:560px;margin:0 auto;position:relative;z-index:2}
+header{margin-bottom:18px}
+.brandrow{display:flex;align-items:center;gap:12px}
+.logo{width:46px;height:46px;border-radius:13px;flex:none;background:linear-gradient(145deg,var(--accent),#ff9b6e);display:grid;place-items:center;box-shadow:0 10px 24px -10px var(--accent)}
+.logo svg{width:26px;height:26px;display:block}
+h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:26px;line-height:1.05;margin:0;letter-spacing:-.02em}
+.sub{color:var(--muted);font-size:13px;margin-top:3px}
+.mode{display:inline-flex;align-items:center;gap:7px;margin-top:14px;padding:7px 12px;border-radius:999px;font-size:12.5px;font-weight:600;border:1px solid var(--line);background:#0e1118}
+.mode .d{width:8px;height:8px;border-radius:50%}
+.mode.device .d{background:var(--accent-2)}.mode.ms .d{background:var(--accent)}
+.card{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px;box-shadow:var(--shadow)}
+.label{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;font-weight:600}
+textarea{width:100%;min-height:128px;resize:vertical;border-radius:14px;background:#0e1118;border:1px solid var(--line);color:var(--text);padding:14px;font-family:inherit;font-size:15px;line-height:1.6;outline:none}
+textarea:focus{border-color:var(--accent)}
+input[type=text]{width:100%;border-radius:12px;background:#0e1118;border:1px solid var(--line);color:var(--text);padding:12px 14px;font-family:inherit;font-size:14px;outline:none}
+input[type=text]:focus{border-color:var(--accent)}
+
+/* Lang tabs — scrollable */
+.lang-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.lang-tabs::-webkit-scrollbar{display:none}
+.ltab{flex:none;padding:8px 14px;border-radius:10px;cursor:pointer;background:#0e1118;border:1px solid var(--line);color:var(--muted);font-weight:600;font-size:13px;transition:.15s;user-select:none;white-space:nowrap}
+.ltab.active{color:#0c0e13;background:var(--accent);border-color:var(--accent)}
+
+select{width:100%;border-radius:12px;background:#0e1118;border:1px solid var(--line);color:var(--text);padding:12px 14px;font-family:inherit;font-size:15px;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%238b93a7' stroke-width='2'%3E%3Cpath d='M3 5l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+select:focus{border-color:var(--accent)}
+.row{display:flex;gap:12px}.row>div{flex:1}.mt{margin-top:16px}
+.btn{width:100%;border:none;border-radius:14px;cursor:pointer;padding:14px;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:16px;color:#0c0e13;background:linear-gradient(135deg,var(--accent),#ff9b6e);box-shadow:0 14px 34px -14px var(--accent);transition:.15s;display:flex;align-items:center;justify-content:center;gap:9px}
+.btn:active{transform:translateY(1px)}.btn:disabled{opacity:.55;cursor:not-allowed}.btn svg{width:20px;height:20px}
+.sliderhead{display:flex;justify-content:space-between;align-items:baseline}
+.sliderval{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15px;color:var(--accent-2)}
+.sliderval.boost{color:var(--accent)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:6px;background:var(--line);outline:none;margin:10px 0 2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--text);border:4px solid var(--accent);cursor:pointer;box-shadow:0 4px 12px -2px rgba(0,0,0,.6)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--text);border:4px solid var(--accent);cursor:pointer}
+.hint{font-size:11.5px;color:var(--muted);margin-top:6px}
+.hint.warn{color:var(--warn)}
+.toggle{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font-size:14px}
+.toggle input{display:none}
+.knob{width:42px;height:25px;border-radius:20px;background:var(--line);position:relative;transition:.18s;flex:none}
+.knob::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:.18s}
+.toggle input:checked + .knob{background:var(--accent-2)}
+.toggle input:checked + .knob::after{transform:translateX(17px)}
+
+/* List header */
+.listhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.listhead h3{font-family:"Bricolage Grotesque",sans-serif;margin:0;font-size:17px;font-weight:700}
+
+/* Toolbar */
+.toolbar-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tbtn{border:1px solid var(--line);background:#0e1118;color:var(--text);border-radius:10px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:.14s;white-space:nowrap}
+.tbtn:hover{border-color:var(--muted)}
+.tbtn:disabled{opacity:.4;cursor:not-allowed}
+.tbtn.primary{border-color:var(--accent-2);color:var(--accent-2)}
+.tbtn.t-sel{border-color:var(--warn);color:var(--warn)}
+.tbtn.t-merge{border-color:var(--good);color:var(--good)}
+.tbtn.t-dlall{border-color:var(--accent);color:var(--accent)}
+.tbtn.t-danger{border-color:var(--bad);color:var(--bad)}
+
+/* Download progress */
+.dl-progress{height:3px;border-radius:2px;background:var(--line);overflow:hidden;margin-bottom:8px;display:none}
+.dl-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0;transition:width .3s}
+
+/* Now-loop banner */
+.nowloop{display:none;align-items:center;gap:11px;background:rgba(255,122,69,.1);border:1px solid var(--accent);border-radius:12px;padding:12px 14px;margin-bottom:6px}
+.nowloop.show{display:flex}
+.nowloop .lt{flex:1;min-width:0}
+.nowloop .lt b{display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
+.nowloop .lt span{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nowloop .spin{width:9px;height:9px;border-radius:50%;background:var(--accent);flex:none;animation:pulse 1s infinite}
+.nowloop .stopb{flex:none;border:none;border-radius:10px;background:var(--text);color:#0c0e13;font-weight:700;font-family:inherit;padding:9px 15px;cursor:pointer;font-size:13px}
+
+/* Status */
+.status{margin:8px 0 4px;font-size:13.5px;min-height:20px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--accent-2);flex:none;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.status.err{color:var(--bad)}.status.ok{color:var(--good)}
+
+/* Sentence rows */
+.prow{display:flex;align-items:flex-start;gap:8px;padding:10px 11px;border-radius:12px;background:#0e1118;border:1px solid var(--line);margin-top:7px;transition:.15s}
+.prow.active{border-color:var(--accent);background:rgba(255,122,69,.07)}
+.prow.cached .num{border-color:var(--accent-2)}
+.prow.selected{border-color:var(--warn)!important;background:rgba(255,209,102,.05)!important}
+
+.row-chk{flex:none;margin-top:9px;width:16px;height:16px;accent-color:var(--warn);cursor:pointer;border-radius:4px}
+.num{flex:none;width:24px;height:24px;border-radius:7px;background:var(--panel-2);border:1px solid var(--line);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--muted);font-family:"Bricolage Grotesque",sans-serif;margin-top:5px}
+.prow.active .num{background:var(--accent);color:#0c0e13;border-color:var(--accent)}
+.row-main{flex:1;min-width:0}
+.ptxt{font-size:14px;line-height:1.5;padding-top:4px;word-break:break-word}
+
+/* Waveform canvas */
+.waveform-wrap{margin-top:6px;border-radius:6px;overflow:hidden;background:rgba(55,210,196,.05);border:1px solid rgba(55,210,196,.15)}
+.waveform-cv{display:block;width:100%;height:30px}
+
+/* Row action buttons */
+.prow-btns{display:flex;flex-direction:column;gap:5px;flex:none}
+.rb{flex:none;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--muted);cursor:pointer;display:grid;place-items:center;transition:.14s}
+.rb:hover{border-color:var(--text);color:var(--text)}
+.rb svg{width:14px;height:14px}
+.rb.rb-play{color:var(--text)}
+.prow.active .rb.rb-play{border-color:var(--accent);color:var(--accent)}
+.rb.rb-dl{color:var(--accent-2);border-color:rgba(55,210,196,.3)}
+.rb.rb-split{font-size:14px}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:14px 0}
+
+details{margin-top:4px}
+details summary{color:var(--muted);font-size:12.5px;cursor:pointer;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details p{font-size:12.5px;color:var(--muted);line-height:1.7;margin:10px 0 0}
+details a{color:var(--accent-2)}details code{background:#0e1118;padding:1px 6px;border-radius:6px;font-size:12px}
+details b{color:var(--text)}
+
+/* ====== Split Modal ====== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:center;justify-content:center;padding:18px}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;width:100%;max-width:500px;box-shadow:var(--shadow);max-height:90dvh;overflow-y:auto}
+.modal-title{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:18px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.modal-sub{color:var(--muted);font-size:12.5px;margin-bottom:14px}
+
+/* Word tokens */
+.split-words{display:flex;flex-wrap:wrap;align-items:center;row-gap:6px;padding:14px;background:#0e1118;border-radius:12px;border:1px solid var(--line);margin-bottom:12px;min-height:52px}
+.sw{display:inline-block;padding:4px 8px;border-radius:7px;background:var(--panel-2);font-size:14px;border:1px solid var(--line);cursor:default;white-space:nowrap;transition:.12s}
+.ssep{display:inline-flex;align-items:center;justify-content:center;width:22px;height:32px;cursor:pointer;flex:none;position:relative}
+.ssep-line{width:2px;height:20px;border-radius:2px;background:var(--line);transition:.15s;pointer-events:none}
+.ssep:hover .ssep-line{background:rgba(255,122,69,.6);height:26px}
+.ssep.chosen .ssep-line{background:var(--accent);height:28px;box-shadow:0 0 10px rgba(255,122,69,.5)}
+
+/* Split preview */
+.split-preview{border-radius:10px;background:#0e1118;border:1px solid var(--line);padding:12px 14px;font-size:13px;margin-bottom:12px;display:none}
+.split-preview.show{display:block}
+.sp-row{display:flex;gap:8px;align-items:baseline;margin-bottom:4px}
+.sp-row:last-child{margin-bottom:0}
+.sp-tag{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;flex:none;padding:2px 7px;border-radius:5px}
+.sp-tag.t1{background:rgba(55,210,196,.15);color:var(--accent-2)}
+.sp-tag.t2{background:rgba(255,122,69,.15);color:var(--accent)}
+.sp-text{color:var(--text);font-size:13.5px;line-height:1.4}
+
+.modal-hint{font-size:11.5px;color:var(--muted);margin-bottom:14px}
+.modal-btns{display:flex;gap:10px}
+.modal-ok{flex:1;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),#ff9b6e);color:#0c0e13;font-weight:700;font-family:"Bricolage Grotesque",sans-serif;font-size:15px;padding:12px;cursor:pointer;transition:.14s}
+.modal-ok:disabled{opacity:.4;cursor:not-allowed}
+.modal-cancel{flex:1;border:1px solid var(--line);border-radius:12px;background:transparent;color:var(--muted);font-weight:600;font-family:inherit;font-size:15px;padding:12px;cursor:pointer}
+.modal-auto{width:100%;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--accent-2);font-family:inherit;font-weight:600;font-size:13px;padding:9px;cursor:pointer;margin-bottom:12px;transition:.14s}
+.modal-auto:hover{border-color:var(--accent-2);background:rgba(55,210,196,.07)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="brandrow"><div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#0c0e13" stroke-width="2.2"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M16 8a5 5 0 0 1 0 8"/><path d="M19 5a9 9 0 0 1 0 14"/></svg></div>
-    <div><h1>TTS Loop Pro</h1><div class="sub">Luyện nghe · ghép câu · tách câu · sóng âm</div></div></div>
+    <div class="brandrow">
+      <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#0c0e13" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M16 8a5 5 0 0 1 0 8"/><path d="M19 5a9 9 0 0 1 0 14"/></svg></div>
+      <div><h1>TTS Loop</h1><div class="sub">Luyện nghe — lặp từng câu</div></div>
+    </div>
     <div class="mode" id="modeBadge"><span class="d"></span><span id="modeText">Giọng thiết bị</span></div>
   </header>
 
   <div class="card">
-    <label class="label" for="text">📝 Danh sách câu (mỗi câu một dòng)</label>
+    <label class="label" for="text">Danh sách câu luyện tập (mỗi câu một dòng)</label>
     <textarea id="text" placeholder="1. The financial analyst will analyse the quarterly market trends.
 2. We need to analyse the feedback before the new update.
-3. The team was asked to analyse the survey data."></textarea>
-    <div class="mt"><span class="label">🌐 Ngôn ngữ & giọng đa dạng</span>
-      <div class="pills" id="langPills">
-        <div class="pill active" data-lang="en"><span class="flag">🇬🇧</span>English</div>
-        <div class="pill" data-lang="vi"><span class="flag">🇻🇳</span>Tiếng Việt</div>
-        <div class="pill" data-lang="ja"><span class="flag">🇯🇵</span>日本語</div>
-        <div class="pill" data-lang="es"><span class="flag">🇪🇸</span>Español</div>
-        <div class="pill" data-lang="fr"><span class="flag">🇫🇷</span>Français</div>
-        <div class="pill" data-lang="de"><span class="flag">🇩🇪</span>Deutsch</div>
-        <div class="pill" data-lang="ko"><span class="flag">🇰🇷</span>한국어</div>
-        <div class="pill" data-lang="zh"><span class="flag">🇨🇳</span>中文</div>
+3. The team was asked to analyse the survey data.
+..."></textarea>
+    <div class="mt"><span class="label">Ngôn ngữ</span>
+      <div class="lang-tabs" id="langTabs">
+        <div class="ltab active" data-lang="en">🇬🇧 EN</div>
+        <div class="ltab" data-lang="vi">🇻🇳 VI</div>
+        <div class="ltab" data-lang="ja">🇯🇵 JA</div>
+        <div class="ltab" data-lang="ko">🇰🇷 KO</div>
+        <div class="ltab" data-lang="zh">🇨🇳 ZH</div>
+        <div class="ltab" data-lang="fr">🇫🇷 FR</div>
+        <div class="ltab" data-lang="es">🇪🇸 ES</div>
+        <div class="ltab" data-lang="de">🇩🇪 DE</div>
       </div>
     </div>
-    <div class="mt"><label class="label" for="voice">🎤 Giọng đọc</label><select id="voice"></select></div>
-    <button class="btn mt" id="loadBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span>Nạp danh sách</span></button>
+    <div class="mt"><label class="label" for="voice">Giọng đọc</label><select id="voice"></select></div>
+    <button class="btn mt" id="loadBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+      <span>Nạp danh sách</span>
+    </button>
   </div>
 
   <div class="card">
-    <div class="sliderhead"><span class="label">🔊 Âm lượng</span><span class="sliderval" id="volVal">100%</span></div>
+    <div class="sliderhead"><span class="label" style="margin:0">Âm lượng</span><span class="sliderval" id="volVal">100%</span></div>
     <input type="range" id="vol" min="10" max="500" step="5" value="100">
     <div class="hint" id="volHint">Trên 100% chỉ hoạt động ở chế độ Microsoft Neural.</div>
-    <div class="row mt"><div><span class="label">⚡ Tốc độ</span><input type="range" id="rate" min="-50" max="100" step="5" value="0"><span class="sliderval" id="rateVal">0%</span></div>
-    <div><span class="label">🎵 Cao độ</span><input type="range" id="pitch" min="-50" max="50" step="5" value="0"><span class="sliderval" id="pitchVal">0</span></div></div>
-    <div><span class="label">⏱️ Nghỉ giữa các lần</span><input type="range" id="gap" min="0" max="5" step="0.5" value="0"><span class="sliderval" id="gapVal">0.0s</span></div>
-    <label class="toggle mt"><input type="checkbox" id="limiter" checked><span class="knob"></span><span>Chống vỡ tiếng khi tăng âm lượng</span></label>
-  </div>
-
-  <div class="card">
-    <label class="label" for="worker">☁️ Máy chủ Microsoft Neural (Worker)</label>
-    <input type="text" id="worker" placeholder="https://ten-cua-ban.workers.dev" autocomplete="off">
-    <div class="hint">Để trống = giọh thiết bị. Dán link Worker → mở khoá giọng AI + tải MP3 + tăng âm lượng >100% + <strong>sóng âm từng câu</strong>.</div>
-  </div>
-
-  <div class="card">
-    <div class="listhead"><h3>📋 Luyện từng dòng</h3>
-      <div class="toolbar"><button class="tbtn primary" id="pregenBtn">✨ Tạo sẵn + sóng âm</button><button class="tbtn" id="clearBtn">🗑️ Xóa hết</button></div>
+    <div class="row mt">
+      <div><div class="sliderhead"><span class="label" style="margin:0">Tốc độ</span><span class="sliderval" id="rateVal">0%</span></div><input type="range" id="rate" min="-50" max="100" step="5" value="0"></div>
+      <div><div class="sliderhead"><span class="label" style="margin:0">Cao độ</span><span class="sliderval" id="pitchVal">0</span></div><input type="range" id="pitch" min="-50" max="50" step="5" value="0"></div>
     </div>
+    <div class="row mt"><div><div class="sliderhead"><span class="label" style="margin:0">Nghỉ giữa các lần</span><span class="sliderval" id="gapVal">0.0s</span></div><input type="range" id="gap" min="0" max="5" step="0.5" value="0"></div></div>
+    <label class="toggle mt" style="margin-top:16px"><input type="checkbox" id="limiter" checked><span class="knob"></span><span>Chống vỡ tiếng khi tăng âm lượng lớn</span></label>
+  </div>
+
+  <div class="card">
+    <label class="label" for="worker">Máy chủ Microsoft Neural (tùy chọn — dán link Worker)</label>
+    <input type="text" id="worker" placeholder="https://ten-cua-ban.workers.dev" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="hint">Để trống = dùng giọng thiết bị. Dán link Worker để mở khoá Microsoft Neural + tải MP3 + tăng âm lượng &gt;100%.</div>
+  </div>
+
+  <div class="card">
+    <div class="listhead"><h3>Luyện từng dòng</h3></div>
+
+    <!-- Toolbar -->
+    <div class="toolbar-grid">
+      <button class="tbtn primary" id="pregenBtn">⚡ Tạo sẵn</button>
+      <button class="tbtn t-dlall" id="dlAllBtn">⬇ Tải tất cả MP3</button>
+      <button class="tbtn t-sel" id="selAllBtn">☑ Chọn tất cả</button>
+      <button class="tbtn t-sel" id="deselAllBtn">□ Bỏ chọn</button>
+      <button class="tbtn t-merge" id="mergeBtn" disabled>⊕ Gộp</button>
+      <button class="tbtn t-danger" id="clearBtn">✕ Xóa</button>
+    </div>
+
+    <!-- Download progress -->
+    <div class="dl-progress" id="dlProgress"><div class="dl-bar" id="dlBar"></div></div>
+
     <div class="nowloop" id="nowloop"></div>
-    <div class="batch-bar">
-      <button class="tbtn" id="selectAllBtn">☑️ Chọn tất cả</button>
-      <button class="tbtn" id="deselectAllBtn">⬜ Bỏ chọn</button>
-      <button class="tbtn primary" id="mergeSelBtn">🔗 Merge selected → MP3</button>
-      <button class="tbtn primary" id="mergeAllBtn">📦 Tải toàn bộ (1 file MP3)</button>
-      <button class="tbtn" id="splitSelBtn">✂️ Split selected (tách câu)</button>
-    </div>
-    <div class="status" id="status">🔹 Dán câu → Nạp danh sách, bật Worker để có sóng âm & merge MP3.</div>
+    <div class="status" id="status">Dán câu vào ô trên rồi bấm "Nạp danh sách".</div>
     <div id="list"><div class="empty">Chưa có câu nào.</div></div>
   </div>
-  <details><summary>ⓘ Hướng dẫn nâng cao</summary>
-    <p><b>✔️ Sóng âm</b> (cần Microsoft Neural): sau khi nạp danh sách, bấm “Tạo sẵn + sóng âm” để thấy biểu đồ nhỏ bên cạnh mỗi câu.<br>
-    <b>🔗 Merge MP3:</b> chọn các câu (ô checkbox) → “Merge selected → MP3” tạo file duy nhất. “Tải toàn bộ” lấy tất cả câu nối tiếp.<br>
-    <b>✂️ Split:</b> chọn câu muốn tách → bấm “Split selected” → tách thành nhiều câu nhỏ hơn dựa trên dấu câu (.!?;:).<br>
-    <b>🌍 Đa dạng giọng:</b> hỗ trợ 8 ngôn ngữ với danh sách giọng Microsoft Neural phong phú (mỗi ngôn ngữ 2-6 giọng).</p>
+
+  <details>
+    <summary>ⓘ Cách dùng &amp; mở khoá giọng Microsoft</summary>
+    <p><b>Luyện tập:</b> bấm ▶ ở câu nào để lặp vô hạn. Bấm câu khác để chuyển. Bấm lại để tắt.</p>
+    <p><b>Chọn &amp; Gộp:</b> tick vào ô vuông trái mỗi câu để chọn. Khi chọn ≥2 câu, nút "Gộp" sẽ sáng — bấm để nối chúng thành một câu.</p>
+    <p><b>Tách câu:</b> bấm ✂ ở mỗi câu để mở hộp thoại tách. Click vào khoảng giữa các từ để chọn điểm tách. Hoặc dùng "Tự động tách" theo dấu câu.</p>
+    <p><b>Sóng âm:</b> khi câu đã được tổng hợp (Microsoft Neural), sóng âm sẽ hiện bên dưới nội dung câu.</p>
+    <p><b>Tải tất cả MP3:</b> bấm "⬇ Tải tất cả MP3" để tổng hợp và gộp toàn bộ câu thành 1 file MP3 duy nhất.</p>
+    <p><b>Hai chế độ:</b><br>
+      • <b>Giọng thiết bị</b> (mặc định): dùng giọng có sẵn. Chạy ngay, không tải MP3.<br>
+      • <b>Microsoft Neural</b>: chất lượng cao, tải MP3, âm lượng &gt;100%. Cần Cloudflare Worker.</p>
+    <p><b>Tạo Worker:</b> vào <a href="https://dash.cloudflare.com" target="_blank">dash.cloudflare.com</a> → Workers → Create → Deploy → Edit code → dán file <code>worker.js</code> → Deploy → copy link dán vào ô trên.</p>
   </details>
 </div>
 
-<script>
-(()=>{
-  "use strict";
-  const MS_VOICES = {
-    en:[{id:"en-US-AriaNeural",label:"Aria · Nữ (Mỹ)"},{id:"en-US-JennyNeural",label:"Jenny · Nữ (Mỹ)"},{id:"en-US-GuyNeural",label:"Guy · Nam (Mỹ)"},{id:"en-US-AnaNeural",label:"Ana · Trẻ em"},{id:"en-GB-SoniaNeural",label:"Sonia · Nữ (Anh)"},{id:"en-AU-NatashaNeural",label:"Natasha · Nữ (Úc)"}],
-    vi:[{id:"vi-VN-HoaiMyNeural",label:"Hoài My · Nữ"},{id:"vi-VN-NamMinhNeural",label:"Nam Minh · Nam"}],
-    ja:[{id:"ja-JP-NanamiNeural",label:"Nanami · Nữ"},{id:"ja-JP-KeitaNeural",label:"Keita · Nam"},{id:"ja-JP-DaichiNeural",label:"Daichi · Nam"}],
-    es:[{id:"es-ES-ElviraNeural",label:"Elvira · Nữ"},{id:"es-ES-AlvaroNeural",label:"Álvaro · Nam"},{id:"es-MX-DaliaNeural",label:"Dalia · Mexico"}],
-    fr:[{id:"fr-FR-DeniseNeural",label:"Denise · Nữ"},{id:"fr-FR-HenriNeural",label:"Henri · Nam"},{id:"fr-CA-SylvieNeural",label:"Sylvie · Canada"}],
-    de:[{id:"de-DE-KatjaNeural",label:"Katja · Nữ"},{id:"de-DE-ConradNeural",label:"Conrad · Nam"}],
-    ko:[{id:"ko-KR-SunHiNeural",label:"Sun-Hi · Nữ"},{id:"ko-KR-InJoonNeural",label:"InJoon · Nam"}],
-    zh:[{id:"zh-CN-XiaoxiaoNeural",label:"晓晓 · Nữ"},{id:"zh-CN-YunxiNeural",label:"云希 · Nam"},{id:"zh-HK-HiuGaaiNeural",label:"HiuGaai · Nữ (HK)"}]
-  };
-  const LANGTAG={en:"en-US",vi:"vi-VN",ja:"ja-JP",es:"es-ES",fr:"fr-FR",de:"de-DE",ko:"ko-KR",zh:"zh-CN"};
+<!-- Split Modal -->
+<div class="modal-overlay" id="splitModal">
+  <div class="modal-box">
+    <div class="modal-title">✂ Tách câu</div>
+    <div class="modal-sub">Bấm vào khoảng giữa các từ để chọn điểm tách</div>
+    <div class="split-words" id="splitWords"></div>
+    <div class="split-preview" id="splitPreview">
+      <div class="sp-row"><span class="sp-tag t1">Câu 1</span><span class="sp-text" id="sp1"></span></div>
+      <div class="sp-row"><span class="sp-tag t2">Câu 2</span><span class="sp-text" id="sp2"></span></div>
+    </div>
+    <button class="modal-auto" id="splitAutoBtn">⚡ Tự động tách theo dấu câu (, . ; : !)</button>
+    <div class="modal-btns">
+      <button class="modal-cancel" id="splitCancel">Hủy</button>
+      <button class="modal-ok" id="splitConfirm" disabled>Tách thành 2 câu</button>
+    </div>
+  </div>
+</div>
 
+<script>
+(() => {
+  "use strict";
+
+  /* ===== Voices ===== */
+  const MS_VOICES = {
+    en:[
+      {id:"en-US-AriaNeural",     label:"Aria · Nữ (Mỹ)"},
+      {id:"en-US-JennyNeural",    label:"Jenny · Nữ (Mỹ)"},
+      {id:"en-US-AmberNeural",    label:"Amber · Nữ (Mỹ)"},
+      {id:"en-US-MonicaNeural",   label:"Monica · Nữ (Mỹ)"},
+      {id:"en-US-SaraNeural",     label:"Sara · Nữ (Mỹ)"},
+      {id:"en-US-NancyNeural",    label:"Nancy · Nữ (Mỹ)"},
+      {id:"en-US-GuyNeural",      label:"Guy · Nam (Mỹ)"},
+      {id:"en-US-DavisNeural",    label:"Davis · Nam (Mỹ)"},
+      {id:"en-US-ChristopherNeural",label:"Christopher · Nam (Mỹ)"},
+      {id:"en-US-EricNeural",     label:"Eric · Nam (Mỹ)"},
+      {id:"en-US-TonyNeural",     label:"Tony · Nam (Mỹ)"},
+      {id:"en-US-AnaNeural",      label:"Ana · Trẻ em (Mỹ)"},
+      {id:"en-GB-SoniaNeural",    label:"Sonia · Nữ (Anh)"},
+      {id:"en-GB-LibbyNeural",    label:"Libby · Nữ (Anh)"},
+      {id:"en-GB-MaisieNeural",   label:"Maisie · Nữ (Anh)"},
+      {id:"en-GB-RyanNeural",     label:"Ryan · Nam (Anh)"},
+      {id:"en-GB-ThomasNeural",   label:"Thomas · Nam (Anh)"},
+      {id:"en-AU-NatashaNeural",  label:"Natasha · Nữ (Úc)"},
+      {id:"en-AU-AnnetteNeural",  label:"Annette · Nữ (Úc)"},
+      {id:"en-AU-WilliamNeural",  label:"William · Nam (Úc)"},
+      {id:"en-CA-ClaraNeural",    label:"Clara · Nữ (Canada)"},
+      {id:"en-CA-LiamNeural",     label:"Liam · Nam (Canada)"},
+      {id:"en-IN-NeerjaNeural",   label:"Neerja · Nữ (Ấn Độ)"},
+      {id:"en-IN-PrabhatNeural",  label:"Prabhat · Nam (Ấn Độ)"},
+      {id:"en-IE-EmilyNeural",    label:"Emily · Nữ (Ireland)"},
+      {id:"en-NZ-MollyNeural",    label:"Molly · Nữ (New Zealand)"},
+    ],
+    vi:[
+      {id:"vi-VN-HoaiMyNeural",   label:"Hoài My · Nữ"},
+      {id:"vi-VN-NamMinhNeural",  label:"Nam Minh · Nam"},
+    ],
+    ja:[
+      {id:"ja-JP-NanamiNeural",   label:"Nanami · Nữ"},
+      {id:"ja-JP-MayuNeural",     label:"Mayu · Nữ"},
+      {id:"ja-JP-ShioriNeural",   label:"Shiori · Nữ"},
+      {id:"ja-JP-AoiNeural",      label:"Aoi · Nữ"},
+      {id:"ja-JP-KeitaNeural",    label:"Keita · Nam"},
+      {id:"ja-JP-DaichiNeural",   label:"Daichi · Nam"},
+      {id:"ja-JP-NaokiNeural",    label:"Naoki · Nam"},
+    ],
+    ko:[
+      {id:"ko-KR-SunHiNeural",    label:"SunHi · Nữ"},
+      {id:"ko-KR-YuJinNeural",    label:"YuJin · Nữ"},
+      {id:"ko-KR-HyunsuNeural",   label:"Hyunsu · Nữ"},
+      {id:"ko-KR-InJoonNeural",   label:"InJoon · Nam"},
+      {id:"ko-KR-BongJinNeural",  label:"BongJin · Nam"},
+    ],
+    zh:[
+      {id:"zh-CN-XiaoxiaoNeural", label:"Xiaoxiao · Nữ (Phổ thông)"},
+      {id:"zh-CN-XiaohanNeural",  label:"Xiaohan · Nữ (Phổ thông)"},
+      {id:"zh-CN-XiaomengNeural", label:"Xiaomeng · Nữ (Phổ thông)"},
+      {id:"zh-CN-XiaoyiNeural",   label:"Xiaoyi · Nữ (Phổ thông)"},
+      {id:"zh-CN-YunxiNeural",    label:"Yunxi · Nam (Phổ thông)"},
+      {id:"zh-CN-YunjianNeural",  label:"Yunjian · Nam (Phổ thông)"},
+      {id:"zh-CN-YunhaoNeural",   label:"Yunhao · Nam (Phổ thông)"},
+      {id:"zh-TW-HsiaoChenNeural",label:"HsiaoChen · Nữ (Đài Loan)"},
+      {id:"zh-TW-YunJheNeural",   label:"YunJhe · Nam (Đài Loan)"},
+      {id:"zh-HK-HiuGaaiNeural",  label:"HiuGaai · Nữ (Quảng Đông)"},
+      {id:"zh-HK-WanLungNeural",  label:"WanLung · Nam (Quảng Đông)"},
+    ],
+    fr:[
+      {id:"fr-FR-DeniseNeural",   label:"Denise · Nữ (Pháp)"},
+      {id:"fr-FR-EloiseNeural",   label:"Eloise · Nữ trẻ (Pháp)"},
+      {id:"fr-FR-BrigitteNeural", label:"Brigitte · Nữ (Pháp)"},
+      {id:"fr-FR-HenriNeural",    label:"Henri · Nam (Pháp)"},
+      {id:"fr-FR-JeromeNeural",   label:"Jerome · Nam (Pháp)"},
+      {id:"fr-CA-SylvieNeural",   label:"Sylvie · Nữ (Canada)"},
+      {id:"fr-CA-ThierryNeural",  label:"Thierry · Nam (Canada)"},
+      {id:"fr-BE-CharlineNeural", label:"Charline · Nữ (Bỉ)"},
+      {id:"fr-CH-ArianeNeural",   label:"Ariane · Nữ (Thụy Sĩ)"},
+    ],
+    es:[
+      {id:"es-ES-ElviraNeural",   label:"Elvira · Nữ (Tây Ban Nha)"},
+      {id:"es-ES-AbrilNeural",    label:"Abril · Nữ (Tây Ban Nha)"},
+      {id:"es-ES-AlvaroNeural",   label:"Alvaro · Nam (Tây Ban Nha)"},
+      {id:"es-MX-DaliaNeural",    label:"Dalia · Nữ (Mexico)"},
+      {id:"es-MX-MarinaNeural",   label:"Marina · Nữ (Mexico)"},
+      {id:"es-MX-JorgeNeural",    label:"Jorge · Nam (Mexico)"},
+      {id:"es-AR-ElenaNeural",    label:"Elena · Nữ (Argentina)"},
+      {id:"es-US-PalomaNeural",   label:"Paloma · Nữ (Mỹ)"},
+    ],
+    de:[
+      {id:"de-DE-KatjaNeural",    label:"Katja · Nữ (Đức)"},
+      {id:"de-DE-KlarissaNeural", label:"Klarissa · Nữ (Đức)"},
+      {id:"de-DE-LouisaNeural",   label:"Louisa · Nữ (Đức)"},
+      {id:"de-DE-ConradNeural",   label:"Conrad · Nam (Đức)"},
+      {id:"de-DE-KasperNeural",   label:"Kasper · Nam (Đức)"},
+      {id:"de-AT-IngridNeural",   label:"Ingrid · Nữ (Áo)"},
+      {id:"de-AT-JonasNeural",    label:"Jonas · Nam (Áo)"},
+      {id:"de-CH-LeniNeural",     label:"Leni · Nữ (Thụy Sĩ)"},
+    ],
+  };
+  const LANGTAG={en:"en-US",vi:"vi-VN",ja:"ja-JP",ko:"ko-KR",zh:"zh-CN",fr:"fr-FR",es:"es-ES",de:"de-DE"};
+
+  /* ===== DOM ===== */
   const $=s=>document.querySelector(s);
   const textEl=$("#text"),voiceEl=$("#voice"),workerEl=$("#worker"),statusEl=$("#status"),listEl=$("#list");
   const volEl=$("#vol"),rateEl=$("#rate"),pitchEl=$("#pitch"),gapEl=$("#gap"),limiterEl=$("#limiter");
   const volVal=$("#volVal"),rateVal=$("#rateVal"),pitchVal=$("#pitchVal"),gapVal=$("#gapVal"),volHint=$("#volHint");
+  const mergeBtn=$("#mergeBtn"),dlProgress=$("#dlProgress"),dlBar=$("#dlBar");
+  const splitModal=$("#splitModal"),splitWordsEl=$("#splitWords"),splitPreviewEl=$("#splitPreview");
+  const sp1El=$("#sp1"),sp2El=$("#sp2"),splitConfirmBtn=$("#splitConfirm");
 
-  let currentLang="en", lines=[], activeIndex=-1, isPlaying=false, busy=false, speechVoices=[];
+  /* ===== State ===== */
+  let currentLang="en",lines=[],activeIndex=-1,isPlaying=false,busy=false,speechVoices=[];
   let audioCtx=null,gainNode=null,limiterNode=null,currentSource=null,loopTimer=null,speechActive=false;
-  let selectedIndices=new Set();
-  const mem=new Map(); let db=null;
+  let selectedSet=new Set();
+  let splitModalIdx=-1,splitPt=-1,splitWords=[];
 
-  const workerUrl=()=> (workerEl.value||"").trim().replace(/\/+$/,"");
-  const isEdge=()=> !!workerUrl();
+  /* ===== Worker/mode ===== */
+  const workerUrl=()=>(workerEl.value||"").trim().replace(/\/+$/,"");
+  const isEdge=()=>!!workerUrl();
 
-  function ensureAudio(){if(audioCtx)return;audioCtx=new (window.AudioContext||window.webkitAudioContext)();gainNode=audioCtx.createGain();limiterNode=audioCtx.createDynamicsCompressor();limiterNode.threshold.value=-1;limiterNode.knee.value=0;limiterNode.ratio.value=20;limiterNode.attack.value=0.003;limiterNode.release.value=0.25;rebuildChain();applyVolume();}
-  function rebuildChain(){try{gainNode.disconnect();}catch(e){}try{limiterNode.disconnect();}catch(e){}limiterEl.checked?gainNode.connect(limiterNode)&limiterNode.connect(audioCtx.destination):gainNode.connect(audioCtx.destination);}
+  /* ===== Web Audio ===== */
+  function ensureAudio(){
+    if(audioCtx)return;
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    gainNode=audioCtx.createGain();
+    limiterNode=audioCtx.createDynamicsCompressor();
+    limiterNode.threshold.value=-1;limiterNode.knee.value=0;limiterNode.ratio.value=20;
+    limiterNode.attack.value=0.003;limiterNode.release.value=0.25;
+    rebuildChain();applyVolume();
+  }
+  function rebuildChain(){
+    try{gainNode.disconnect();}catch(e){}try{limiterNode.disconnect();}catch(e){}
+    if(limiterEl.checked){gainNode.connect(limiterNode);limiterNode.connect(audioCtx.destination);}
+    else{gainNode.connect(audioCtx.destination);}
+  }
   function applyVolume(){if(gainNode)gainNode.gain.value=(parseInt(volEl.value,10)||100)/100;}
 
-  async function synthWorker(meta){const u=workerUrl()+"?text="+encodeURIComponent(meta.text)+"&voice="+encodeURIComponent(meta.voice)+"&rate="+meta.rate+"&pitch="+meta.pitch;const res=await fetch(u);if(!res.ok)throw new Error("Worker lỗi ("+res.status+")");const buf=await res.arrayBuffer();if(buf.byteLength<200)throw new Error("Âm thanh rỗng");return buf;}
+  /* ===== Microsoft Worker ===== */
+  async function synthWorker(meta){
+    const u=workerUrl()+"?text="+encodeURIComponent(meta.text)+"&voice="+encodeURIComponent(meta.voice)+"&rate="+meta.rate+"&pitch="+meta.pitch;
+    const res=await fetch(u);
+    if(!res.ok)throw new Error("Worker lỗi ("+res.status+"). Kiểm tra lại link.");
+    const buf=await res.arrayBuffer();
+    if(!buf||buf.byteLength<200)throw new Error("Không nhận được âm thanh từ Worker.");
+    return buf;
+  }
+
+  /* ===== Cache ===== */
+  const mem=new Map();let db=null;
   function idb(){return new Promise(res=>{if(db)return res(db);let r;try{r=indexedDB.open("ttsloop",1);}catch(e){return res(null);}r.onupgradeneeded=()=>r.result.createObjectStore("clips",{keyPath:"key"});r.onsuccess=()=>{db=r.result;res(db);};r.onerror=()=>res(null);});}
-  async function idbGet(k){const d=await idb();if(!d)return null;return new Promise(res=>{try{const rq=d.transaction("clips").objectStore("clips").get(k);rq.onsuccess=()=>res(rq.result||null);}catch(e){res(null);}});}
+  async function idbGet(k){const d=await idb();if(!d)return null;return new Promise(res=>{try{const rq=d.transaction("clips").objectStore("clips").get(k);rq.onsuccess=()=>res(rq.result||null);rq.onerror=()=>res(null);}catch(e){res(null);}});}
   async function idbPut(rec){const d=await idb();if(!d)return;try{d.transaction("clips","readwrite").objectStore("clips").put(rec);}catch(e){}}
   async function idbClear(){const d=await idb();if(!d)return;try{d.transaction("clips","readwrite").objectStore("clips").clear();}catch(e){}}
   const metaFor=t=>({text:t,voice:voiceEl.value,rate:parseInt(rateEl.value,10),pitch:parseInt(pitchEl.value,10)});
   const keyOf=m=>[m.voice,m.rate,m.pitch,m.text].join("\u00a6");
+  function isCached(m){return mem.has(keyOf(m));}
+  async function ensureClip(meta){
+    const key=keyOf(meta);
+    if(mem.has(key))return{key,...mem.get(key)};
+    const rec=await idbGet(key);
+    if(rec&&rec.mp3){const buffer=await audioCtx.decodeAudioData(rec.mp3.slice(0));const e={mp3:rec.mp3,buffer,meta:rec.meta};mem.set(key,e);return{key,...e};}
+    const mp3=await synthWorker(meta);
+    const buffer=await audioCtx.decodeAudioData(mp3.slice(0));
+    mem.set(key,{mp3,buffer,meta});idbPut({key,mp3,meta,ts:Date.now()});
+    return{key,mp3,buffer,meta};
+  }
+  function safeName(s){return(s||"tts").trim().replace(/[\\/:*?"<>|\n\r\t]+/g," ").replace(/\s+/g," ").slice(0,48).trim()||"tts";}
 
-  function computeWaveform(buffer, width=70, height=30){if(!buffer)return null;const data=buffer.getChannelData(0);const samples=data.length;const step=Math.floor(samples/width);const bars=[];for(let i=0;i<width;i++){let sum=0;for(let j=0;j<step&&i*step+j<samples;j++)sum+=Math.abs(data[i*step+j]);const amp=sum/step;bars.push(Math.min(1,amp*2));}const canvas=document.createElement("canvas");canvas.width=width;canvas.height=height;const ctx=canvas.getContext("2d");ctx.fillStyle="#13161f";ctx.fillRect(0,0,width,height);const barW=Math.max(2,width/bars.length-1);for(let i=0;i<bars.length;i++){const h=Math.max(2,bars[i]*height);ctx.fillStyle=`hsl(${20+bars[i]*30}, 70%, 55%)`;ctx.fillRect(i*(barW+1),height-h,barW,h);}return canvas.toDataURL();}
-  async function ensureClip(meta){const key=keyOf(meta);if(mem.has(key))return{key,...mem.get(key)};const rec=await idbGet(key);if(rec&&rec.mp3){const buffer=await audioCtx.decodeAudioData(rec.mp3.slice(0));const waveform=rec.waveform||computeWaveform(buffer);const obj={mp3:rec.mp3,buffer,meta,waveform};mem.set(key,obj);return{key,...obj};}const mp3=await synthWorker(meta);const buffer=await audioCtx.decodeAudioData(mp3.slice(0));const waveform=computeWaveform(buffer);mem.set(key,{mp3,buffer,meta,waveform});idbPut({key,mp3,meta,waveform,ts:Date.now()});return{key,mp3,buffer,meta,waveform};}
+  /* ===== Audio loop ===== */
+  function stopLoop(){
+    isPlaying=false;
+    if(loopTimer){clearTimeout(loopTimer);loopTimer=null;}
+    if(currentSource){try{currentSource.onended=null;currentSource.stop();}catch(e){}try{currentSource.disconnect();}catch(e){}currentSource=null;}
+  }
+  function startLoop(buffer){
+    isPlaying=true;const gap=parseFloat(gapEl.value)||0;
+    const once=()=>{
+      if(!isPlaying)return;
+      currentSource=audioCtx.createBufferSource();currentSource.buffer=buffer;currentSource.connect(gainNode);
+      if(gap<=0){currentSource.loop=true;}
+      else{currentSource.onended=()=>{if(isPlaying)loopTimer=setTimeout(once,gap*1000);};}
+      currentSource.start();
+    };once();
+  }
 
-  function stopLoop(){isPlaying=false;if(loopTimer){clearTimeout(loopTimer);loopTimer=null;}if(currentSource){try{currentSource.onended=null;currentSource.stop();}catch(e){}try{currentSource.disconnect();}catch(e){}currentSource=null;}}
-  function startLoop(buffer){isPlaying=true;const gap=parseFloat(gapEl.value)||0;const once=()=>{if(!isPlaying)return;currentSource=audioCtx.createBufferSource();currentSource.buffer=buffer;currentSource.connect(gainNode);if(gap<=0)currentSource.loop=true;else currentSource.onended=()=>{if(isPlaying)loopTimer=setTimeout(once,gap*1000);};currentSource.start();};once();}
+  /* ===== Speech synthesis ===== */
+  function loadSpeechVoices(){try{speechVoices=window.speechSynthesis?speechSynthesis.getVoices():[];}catch(e){speechVoices=[];}}
+  function voicesForLang(){return speechVoices.filter(v=>(v.lang||"").toLowerCase().startsWith(currentLang));}
+  function selectedSpeechVoice(){return speechVoices.find(v=>v.name===voiceEl.value)||voicesForLang()[0]||null;}
   function stopSpeech(){speechActive=false;if(loopTimer){clearTimeout(loopTimer);loopTimer=null;}try{speechSynthesis.cancel();}catch(e){}}
-  function speakLoop(i){speechActive=true;isPlaying=true;const gap=parseFloat(gapEl.value)||0;const once=()=>{if(!speechActive)return;const u=new SpeechSynthesisUtterance(lines[i]);const v=selectedSpeechVoice();if(v){u.voice=v;u.lang=v.lang;}else u.lang=LANGTAG[currentLang];u.rate=Math.max(0.1,Math.min(10,1+parseInt(rateEl.value,10)/100));u.pitch=Math.max(0,Math.min(2,1+parseInt(pitchEl.value,10)/100));u.volume=Math.min(1,(parseInt(volEl.value,10)||100)/100);u.onend=()=>{if(speechActive)loopTimer=setTimeout(once,Math.max(0,gap)*1000);};u.onerror=()=>{if(speechActive)loopTimer=setTimeout(once,800);};try{speechSynthesis.speak(u);}catch(e){}};once();}
+  function speakLoop(i){
+    speechActive=true;isPlaying=true;
+    const gap=parseFloat(gapEl.value)||0;
+    const once=()=>{
+      if(!speechActive)return;
+      const u=new SpeechSynthesisUtterance(lines[i]);
+      const v=selectedSpeechVoice();if(v){u.voice=v;u.lang=v.lang;}else{u.lang=LANGTAG[currentLang];}
+      u.rate=Math.max(0.1,Math.min(10,1+parseInt(rateEl.value,10)/100));
+      u.pitch=Math.max(0,Math.min(2,1+parseInt(pitchEl.value,10)/100));
+      u.volume=Math.min(1,(parseInt(volEl.value,10)||100)/100);
+      u.onend=()=>{if(speechActive)loopTimer=setTimeout(once,Math.max(0,gap)*1000);};
+      u.onerror=()=>{if(speechActive)loopTimer=setTimeout(once,800);};
+      try{speechSynthesis.speak(u);}catch(e){}
+    };once();
+  }
   function stopAll(){stopLoop();stopSpeech();}
   function stopCurrent(){stopAll();activeIndex=-1;render();}
-  async function playLine(i){if(activeIndex===i&&isPlaying){stopCurrent();status("Đã dừng","",false);return;}if(busy)return;if(isEdge()){busy=true;const meta=metaFor(lines[i]);try{ensureAudio();await audioCtx.resume();if(!isCached(meta))status("Câu "+(i+1)+" — đang tạo MP3…","",true);const clip=await ensureClip(meta);stopAll();activeIndex=i;render();startLoop(clip.buffer);}catch(e){stopAll();activeIndex=-1;render();status(e.message||"Lỗi","err",false);}finally{busy=false;}}else{if(!window.speechSynthesis){status("Thiết bị không hỗ trợ","err",false);return;}stopAll();activeIndex=i;render();speakLoop(i);}}
-  async function downloadLine(i){if(!isEdge()){status("Tải MP3 chỉ ở chế độ Neural","err",false);return;}if(busy)return;busy=true;try{ensureAudio();await audioCtx.resume();const clip=await ensureClip(metaFor(lines[i]));const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([clip.mp3],{type:"audio/mpeg"}));a.download=safeName(lines[i])+".mp3";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);status("Đã tải MP3 câu "+(i+1),"ok",false);}catch(e){status(e.message,"err",false);}finally{busy=false;}}
-  async function pregenAll(){if(!isEdge()){status("“Tạo sẵn + sóng âm” chỉ dùng Microsoft Neural.","err",false);return;}if(busy||!lines.length)return;busy=true;$("#pregenBtn").disabled=true;try{ensureAudio();await audioCtx.resume();let made=0;for(let i=0;i<lines.length;i++){const meta=metaFor(lines[i]);if(!isCached(meta)){status(`Đang tạo ${i+1}/${lines.length} (sóng âm)…`,"",true);await ensureClip(meta);made++;render();await new Promise(r=>setTimeout(r,120));}}status(made?`✅ Đã tạo ${made} câu + sóng âm`:"Mọi câu đã có sẵn!","ok",false);render();}catch(e){status(e.message,"err",false);}finally{busy=false;$("#pregenBtn").disabled=false;}}
-  function isCached(m){return mem.has(keyOf(m));}
-  function safeName(s){return (s||"tts").trim().replace(/[\\/:*?"<>|\n]/g," ").slice(0,48);}
-  function loadSpeechVoices(){try{speechVoices=window.speechSynthesis?speechSynthesis.getVoices():[];}catch(e){}}
-  function voicesForLang(){return speechVoices.filter(v=>v.lang.toLowerCase().startsWith(currentLang));}
-  function selectedSpeechVoice(){return speechVoices.find(v=>v.name===voiceEl.value)||voicesForLang()[0]||null;}
-  function status(msg,kind,spin){statusEl.className="status"+(kind?(" "+kind):"");statusEl.innerHTML=(spin?'<span class="dot"></span>':'')+msg;}
-  function updateModeBadge(){const b=$("#modeBadge");if(isEdge()){b.className="mode ms";$("#modeText").textContent="Microsoft Neural + sóng âm";}else{b.className="mode device";$("#modeText").textContent="Giọng thiết bị";}}
-  function refreshVoices(){const prev=voiceEl.value;voiceEl.innerHTML="";if(isEdge()){MS_VOICES[currentLang].forEach(v=>{const o=document.createElement("option");o.value=v.id;o.textContent=v.label;voiceEl.appendChild(o);});}else{const vs=voicesForLang();if(!vs.length){const o=document.createElement("option");o.value="";o.textContent="(không có giọng)";voiceEl.appendChild(o);}else vs.forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name+(v.localService?"":" 🔄");voiceEl.appendChild(o);});}if([...voiceEl.options].some(o=>o.value===prev))voiceEl.value=prev;}
-  function updateVolHint(){const v=parseInt(volEl.value,10);if(!isEdge()&&v>100)volHint.className="hint warn",volHint.textContent="Giọng thiết bị giới hạn 100%. Dùng Neural để tăng to.";else volHint.className="hint",volHint.textContent="Trên 100% chỉ hoạt động ở chế độ Microsoft Neural.";}
-  function render(){updateNowloop();if(!lines.length){listEl.innerHTML='<div class="empty">Chưa có câu nào.</div>';return;}const edge=isEdge();listEl.innerHTML="";lines.forEach((line,i)=>{const active=(i===activeIndex&&isPlaying),cached=edge&&isCached(metaFor(line));const row=document.createElement("div");row.className="prow"+(active?" active":"")+(cached?" cached":"");const checked=selectedIndices.has(i);row.innerHTML=`<input type="checkbox" class="sel-cb" ${checked?"checked":""} data-idx="${i}"><div class="num">${i+1}</div><div class="ptxt">${escapeHtml(line)}</div><div class="wave-cont" data-wav-idx="${i}"><canvas width="70" height="30" style="width:70px;height:30px;border-radius:6px;background:#07090e" class="wave-canvas"></canvas></div><button class="go" title="Phát/Dừng">${active?'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'}</button>${edge?'<button class="dl" title="Tải MP3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14"/></svg></button>':''}`;
-      row.querySelector(".go").onclick=()=>playLine(i);const dl=row.querySelector(".dl");if(dl)dl.onclick=()=>downloadLine(i);const cb=row.querySelector(".sel-cb");cb.addEventListener("change",(e)=>{if(e.target.checked)selectedIndices.add(i);else selectedIndices.delete(i);render();});
-      listEl.appendChild(row);if(edge&&cached){const waveKey=keyOf(metaFor(line));if(mem.has(waveKey)&&mem.get(waveKey).waveform){const canvas=row.querySelector(".wave-canvas");if(canvas){const img=new Image();img.onload=()=>{const ctx=canvas.getContext("2d");ctx.drawImage(img,0,0,70,30);};img.src=mem.get(waveKey).waveform;}}else{const ctx=row.querySelector(".wave-canvas").getContext("2d");ctx.fillStyle="#2a2f3f";ctx.fillRect(0,0,70,30);ctx.fillStyle="#ff7a45";ctx.font="8px monospace";ctx.fillText("⚡",30,18);}}else if(!edge){const ctx=row.querySelector(".wave-canvas").getContext("2d");ctx.fillStyle="#1e232e";ctx.fillRect(0,0,70,30);ctx.fillStyle="#8b93a7";ctx.font="7px monospace";ctx.fillText("neural",18,18);}});}
-  function updateNowloop(){const el=$("#nowloop");if(isPlaying&&activeIndex>=0&&lines[activeIndex]){el.className="nowloop show";el.innerHTML='<span class="spin"></span><div class="lt"><b>🔁 Lặp câu '+(activeIndex+1)+' ∞</b><span>'+escapeHtml(lines[activeIndex])+'</span></div><button class="stopb">Dừng</button>';el.querySelector(".stopb").onclick=()=>{stopCurrent();status("Đã dừng","",false);};}else{el.className="nowloop";el.innerHTML="";}}
-  function escapeHtml(s){return s.replace(/[&<>]/g,function(m){if(m==="&")return "&amp;";if(m==="<")return "&lt;";if(m===">")return "&gt;";return m;});}
-  function loadList(){const raw=textEl.value;lines=raw.split(/\r?\n/).map(s=>s.replace(/^\s*\d+\s*[.\)\）:：、．。\-]+\s*/,"").trim()).filter(Boolean);stopAll();activeIndex=-1;selectedIndices.clear();try{localStorage.setItem("ttsloop_text",raw);}catch(e){}if(!lines.length){status("Không thấy câu nào.","err",false);render();return;}status(`Đã nạp ${lines.length} câu. Bật Worker để có merge & sóng âm.`,"ok",false);render();}
-  async function mergeSelectedToMp3(all=false){if(!isEdge()){status("Chỉ Microsoft Neural hỗ trợ merge MP3.","err",false);return;}const idxs=all?lines.map((_,i)=>i):[...selectedIndices].sort((a,b)=>a-b);if(idxs.length===0){status("Chưa chọn câu nào để merge.","err",false);return;}if(busy)return;busy=true;status(`Đang chuẩn bị ${idxs.length} câu...`,"",true);try{ensureAudio();await audioCtx.resume();const chunks=[];for(let idx of idxs){const clip=await ensureClip(metaFor(lines[idx]));chunks.push(clip.mp3);}const mergedBlob=new Blob(chunks,{type:"audio/mpeg"});const a=document.createElement("a");a.href=URL.createObjectURL(mergedBlob);a.download=all?"full_merged.mp3":"selected_merged.mp3";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);status(`Đã tạo file MP3 (${idxs.length} câu)`,`ok`,false);}catch(e){status(e.message,"err",false);}finally{busy=false;}}
-  function splitSelectedLines(){if(!lines.length)return;const newLines=[];const idxsToSplit=[...selectedIndices].sort((a,b)=>b-a);if(idxsToSplit.length===0){status("Hãy chọn câu muốn tách (checkbox).","err",false);return;}const newSet=new Set();for(let i=0;i<lines.length;i++){if(idxsToSplit.includes(i)){const line=lines[i];const parts=line.split(/[.!?;:]+(?:\s+|$)/).filter(p=>p.trim().length>0);if(parts.length>1){parts.forEach(p=>newLines.push(p.trim()));}else newLines.push(line);}else newLines.push(lines[i]);}lines=newLines;selectedIndices.clear();stopAll();activeIndex=-1;render();status(`Đã tách ${idxsToSplit.length} câu thành các câu nhỏ.`,"ok",false);}
-  function selectAll(){for(let i=0;i<lines.length;i++)selectedIndices.add(i);render();}
-  function deselectAll(){selectedIndices.clear();render();}
+
+  /* ===== Play ===== */
+  async function playLine(i){
+    if(activeIndex===i&&isPlaying){stopCurrent();status("Đã dừng.","",false);return;}
+    if(busy)return;
+    if(isEdge()){
+      busy=true;const meta=metaFor(lines[i]);
+      try{ensureAudio();await audioCtx.resume();
+        if(!isCached(meta))status("Câu "+(i+1)+" — đang tạo MP3…","",true);
+        const clip=await ensureClip(meta);
+        stopAll();activeIndex=i;render();startLoop(clip.buffer);
+      }catch(e){stopAll();activeIndex=-1;render();status(e.message||"Có lỗi.","err",false);}
+      finally{busy=false;}
+    }else{
+      if(!window.speechSynthesis){status("Thiết bị không hỗ trợ. Hãy dùng chế độ Microsoft.","err",false);return;}
+      stopAll();activeIndex=i;render();
+      if(!selectedSpeechVoice()&&!voicesForLang().length)status("Chưa có giọng cho ngôn ngữ này — thử đọc mặc định.","",false);
+      speakLoop(i);
+    }
+  }
+
+  /* ===== Download single ===== */
+  async function downloadLine(i){
+    if(!isEdge()){status("Tải MP3 chỉ có ở chế độ Microsoft Neural.","err",false);return;}
+    if(busy)return;busy=true;
+    try{ensureAudio();await audioCtx.resume();status("Đang chuẩn bị MP3…","",true);
+      const meta=metaFor(lines[i]);const clip=await ensureClip(meta);
+      const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([clip.mp3],{type:"audio/mpeg"}));
+      a.download=safeName(meta.text)+".mp3";document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+      status("Đã tải MP3 câu "+(i+1)+".","ok",false);render();
+    }catch(e){status(e.message||"Tải thất bại.","err",false);}
+    finally{busy=false;}
+  }
+
+  /* ===== Download ALL as one MP3 ===== */
+  async function downloadAll(){
+    if(!isEdge()){status("Tải tất cả MP3 chỉ có ở chế độ Microsoft Neural (dán link Worker).","err",false);return;}
+    if(!lines.length){status("Chưa có câu nào.","err",false);return;}
+    if(busy)return;
+    busy=true;dlProgress.style.display="block";dlBar.style.width="0";
+    try{
+      ensureAudio();await audioCtx.resume();
+      const parts=[];
+      for(let i=0;i<lines.length;i++){
+        status("Đang tạo "+(i+1)+"/"+lines.length+"…","",true);
+        dlBar.style.width=((i/lines.length)*80)+"%";
+        const clip=await ensureClip(metaFor(lines[i]));
+        parts.push(clip.mp3);render();
+        await new Promise(r=>setTimeout(r,60));
+      }
+      status("Đang gộp file…","",true);dlBar.style.width="90%";
+      let totalBytes=0;for(const p of parts)totalBytes+=p.byteLength;
+      const combined=new Uint8Array(totalBytes);
+      let off=0;for(const p of parts){combined.set(new Uint8Array(p),off);off+=p.byteLength;}
+      dlBar.style.width="100%";
+      const blob=new Blob([combined],{type:"audio/mpeg"});
+      const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+      a.download="ttsloop-all-"+lines.length+"cau.mp3";
+      document.body.appendChild(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+      status("Đã tải "+lines.length+" câu → 1 file MP3.","ok",false);
+    }catch(e){status(e.message||"Tải thất bại.","err",false);}
+    finally{busy=false;setTimeout(()=>{dlProgress.style.display="none";dlBar.style.width="0";},600);}
+  }
+
+  /* ===== Pregen ===== */
+  async function pregenAll(){
+    if(!isEdge()){status("Tạo sẵn chỉ dùng ở chế độ Microsoft Neural.","",false);return;}
+    if(busy||!lines.length)return;busy=true;$("#pregenBtn").disabled=true;
+    try{ensureAudio();await audioCtx.resume();let made=0;
+      for(let i=0;i<lines.length;i++){const meta=metaFor(lines[i]);
+        if(!isCached(meta)){status("Đang tạo "+(i+1)+"/"+lines.length+"…","",true);await ensureClip(meta);made++;render();await new Promise(r=>setTimeout(r,150));}}
+      status(made?("Đã tạo sẵn "+made+" câu."):"Tất cả đã có trong cache.","ok",false);
+    }catch(e){status(e.message||"Tạo trước thất bại.","err",false);}
+    finally{busy=false;$("#pregenBtn").disabled=false;}
+  }
+
+  /* ===== Selection ===== */
+  function updateMergeBtn(){
+    const n=selectedSet.size;
+    mergeBtn.disabled=n<2;
+    mergeBtn.textContent=n>=2?"⊕ Gộp ("+n+")":"⊕ Gộp";
+  }
+
+  /* ===== Merge ===== */
+  function mergeSelected(){
+    if(selectedSet.size<2)return;
+    const sorted=[...selectedSet].sort((a,b)=>a-b);
+    const merged=sorted.map(i=>lines[i]).join(" ");
+    lines=lines.filter((_,i)=>!selectedSet.has(i));
+    lines.splice(sorted[0],0,merged);
+    if(activeIndex>=0){stopAll();activeIndex=-1;}
+    selectedSet.clear();
+    render();status("Đã gộp "+sorted.length+" câu thành 1.","ok",false);
+  }
+
+  /* ===== Split Modal ===== */
+  function openSplitModal(i){
+    splitModalIdx=i;splitPt=-1;
+    splitWords=lines[i].split(" ").filter(Boolean);
+    let html="";
+    splitWords.forEach((w,wi)=>{
+      if(wi>0)html+=`<span class="ssep" data-idx="${wi}"><span class="ssep-line"></span></span>`;
+      html+=`<span class="sw">${escHtml(w)}</span>`;
+    });
+    splitWordsEl.innerHTML=html;
+    splitPreviewEl.classList.remove("show");
+    splitConfirmBtn.disabled=true;
+    splitModal.classList.add("show");
+    splitWordsEl.querySelectorAll(".ssep").forEach(sep=>{
+      sep.onclick=()=>{
+        splitWordsEl.querySelectorAll(".ssep").forEach(s=>s.classList.remove("chosen"));
+        sep.classList.add("chosen");
+        splitPt=parseInt(sep.dataset.idx);
+        updateSplitPreview();
+      };
+    });
+  }
+  function updateSplitPreview(){
+    if(splitPt<1)return;
+    const left=splitWords.slice(0,splitPt).join(" ");
+    const right=splitWords.slice(splitPt).join(" ");
+    sp1El.textContent=left;sp2El.textContent=right;
+    splitPreviewEl.classList.add("show");
+    splitConfirmBtn.disabled=!left.trim()||!right.trim();
+  }
+  function doAutoSplit(){
+    const text=lines[splitModalIdx];
+    const m=text.match(/^(.+?[,;.!?。、，；：！？])(\s*)(.+)$/);
+    if(m){
+      const left=m[1].trim(),right=m[3].trim();
+      if(left&&right){
+        // find word index where right part starts
+        const allWords=text.split(" ").filter(Boolean);
+        let rebuilt="",foundIdx=-1;
+        for(let i=0;i<allWords.length;i++){
+          rebuilt=(rebuilt?rebuilt+" ":"")+allWords[i];
+          if(rebuilt.trim()===left.trim()){foundIdx=i+1;break;}
+        }
+        if(foundIdx>0&&foundIdx<allWords.length){
+          splitWords=allWords;splitPt=foundIdx;
+          // update UI
+          splitWordsEl.querySelectorAll(".ssep").forEach(sep=>{
+            sep.classList.remove("chosen");
+            if(parseInt(sep.dataset.idx)===splitPt)sep.classList.add("chosen");
+          });
+          updateSplitPreview();return;
+        }
+      }
+    }
+    // fallback: split at middle
+    const words=lines[splitModalIdx].split(" ").filter(Boolean);
+    splitWords=words;splitPt=Math.ceil(words.length/2);
+    splitWordsEl.querySelectorAll(".ssep").forEach(sep=>{
+      sep.classList.remove("chosen");
+      if(parseInt(sep.dataset.idx)===splitPt)sep.classList.add("chosen");
+    });
+    updateSplitPreview();
+  }
+  function doSplit(){
+    if(splitModalIdx<0||splitPt<1)return;
+    const left=splitWords.slice(0,splitPt).join(" ").trim();
+    const right=splitWords.slice(splitPt).join(" ").trim();
+    if(!left||!right)return;
+    lines.splice(splitModalIdx,1,left,right);
+    if(activeIndex===splitModalIdx){stopAll();activeIndex=-1;}
+    else if(activeIndex>splitModalIdx)activeIndex++;
+    selectedSet.clear();
+    closeSplitModal();
+    render();status("Đã tách câu "+(splitModalIdx+1)+" thành 2.","ok",false);
+  }
+  function closeSplitModal(){
+    splitModal.classList.remove("show");
+    splitModalIdx=-1;splitPt=-1;splitWords=[];
+  }
+  function escHtml(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+  /* ===== Waveform ===== */
+  function drawWaveform(canvas,buffer){
+    const dpr=window.devicePixelRatio||1;
+    const W=canvas.offsetWidth||280;
+    const H=canvas.offsetHeight||30;
+    canvas.width=W*dpr;canvas.height=H*dpr;
+    const ctx=canvas.getContext("2d");
+    ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
+    const data=buffer.getChannelData(0);
+    const step=Math.max(1,Math.floor(data.length/W));
+    // gradient fill
+    const grad=ctx.createLinearGradient(0,0,W,0);
+    grad.addColorStop(0,"#37d2c4");grad.addColorStop(1,"#5fd07a");
+    ctx.fillStyle=grad;
+    for(let x=0;x<W;x++){
+      let maxAmp=0;
+      for(let j=0;j<step;j++){const v=Math.abs(data[x*step+j]||0);if(v>maxAmp)maxAmp=v;}
+      const h=Math.max(1,maxAmp*(H*0.85));
+      ctx.fillRect(x,(H-h)/2,1,h);
+    }
+  }
+
+  /* ===== Render ===== */
+  function statusFn(msg,kind,spin){
+    statusEl.className="status"+(kind?" "+kind:"");
+    statusEl.innerHTML=(spin?'<span class="dot"></span>':"")+msg;
+  }
+  const status=statusFn;
+
+  function updateModeBadge(){
+    const b=$("#modeBadge");
+    if(isEdge()){b.className="mode ms";$("#modeText").textContent="Microsoft Neural";}
+    else{b.className="mode device";$("#modeText").textContent="Giọng thiết bị";}
+  }
+  function refreshVoices(){
+    const prev=voiceEl.value;voiceEl.innerHTML="";
+    if(isEdge()){
+      (MS_VOICES[currentLang]||[]).forEach(v=>{const o=document.createElement("option");o.value=v.id;o.textContent=v.label;voiceEl.appendChild(o);});
+    }else{
+      const vs=voicesForLang();
+      if(!vs.length){const o=document.createElement("option");o.value="";o.textContent="(thiết bị chưa có giọng cho ngôn ngữ này)";voiceEl.appendChild(o);}
+      vs.forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name+(v.localService?"":" · online");voiceEl.appendChild(o);});
+    }
+    if([...voiceEl.options].some(o=>o.value===prev))voiceEl.value=prev;
+  }
+  function updateVolHint(){
+    const v=parseInt(volEl.value,10);
+    if(!isEdge()&&v>100)volHint.className="hint warn",volHint.textContent="Chế độ giọng thiết bị giới hạn 100%. Dùng Microsoft Neural để tăng to hơn.";
+    else volHint.className="hint",volHint.textContent="Trên 100% chỉ hoạt động ở chế độ Microsoft Neural.";
+  }
+
+  function render(){
+    updateNowloop();updateMergeBtn();
+    if(!lines.length){listEl.innerHTML='<div class="empty">Chưa có câu nào.</div>';return;}
+    const edge=isEdge();listEl.innerHTML="";
+    lines.forEach((line,i)=>{
+      const active=(i===activeIndex&&isPlaying);
+      const cached=edge&&isCached(metaFor(line));
+      const sel=selectedSet.has(i);
+
+      const row=document.createElement("div");
+      row.className="prow"+(active?" active":"")+(cached?" cached":"")+(sel?" selected":"");
+
+      // Checkbox
+      const chk=document.createElement("input");
+      chk.type="checkbox";chk.className="row-chk";chk.checked=sel;
+      chk.onchange=()=>{
+        if(chk.checked)selectedSet.add(i);else selectedSet.delete(i);
+        row.classList.toggle("selected",chk.checked);
+        updateMergeBtn();
+      };
+
+      // Number badge
+      const num=document.createElement("div");num.className="num";num.textContent=i+1;
+
+      // Main area (text + waveform)
+      const main=document.createElement("div");main.className="row-main";
+      const ptxt=document.createElement("div");ptxt.className="ptxt";ptxt.textContent=line;
+      main.appendChild(ptxt);
+
+      // Waveform
+      if(cached){
+        const key=keyOf(metaFor(line));
+        if(mem.has(key)){
+          const wrap=document.createElement("div");wrap.className="waveform-wrap";
+          const cv=document.createElement("canvas");cv.className="waveform-cv";
+          wrap.appendChild(cv);main.appendChild(wrap);
+          setTimeout(()=>{if(cv.isConnected)drawWaveform(cv,mem.get(key).buffer);},30);
+        }
+      }
+
+      // Button column
+      const btns=document.createElement("div");btns.className="prow-btns";
+
+      // Play button
+      const goBtn=document.createElement("button");goBtn.className="rb rb-play";goBtn.title="Phát/Dừng";
+      goBtn.innerHTML=active
+        ?'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
+        :'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+      goBtn.onclick=()=>playLine(i);
+      btns.appendChild(goBtn);
+
+      // Split button
+      const splitBtn=document.createElement("button");splitBtn.className="rb rb-split";splitBtn.title="Tách câu";
+      splitBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v6M6 9c0 1.7 1.3 3 3 3h6c1.7 0 3 1.3 3 3v3M6 21v-3M6 18c0-1.7 1.3-3 3-3h6c1.7 0 3-1.3 3-3V9M18 6l-3-3 3-3M18 21l-3-3 3-3"/></svg>';
+      splitBtn.onclick=()=>openSplitModal(i);
+      btns.appendChild(splitBtn);
+
+      // Download single (MS only)
+      if(edge){
+        const dl=document.createElement("button");dl.className="rb rb-dl";dl.title="Tải MP3";
+        dl.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14"/></svg>';
+        dl.onclick=()=>downloadLine(i);
+        btns.appendChild(dl);
+      }
+
+      row.appendChild(chk);row.appendChild(num);row.appendChild(main);row.appendChild(btns);
+      listEl.appendChild(row);
+    });
+  }
+
+  function updateNowloop(){
+    const el=$("#nowloop");
+    if(isPlaying&&activeIndex>=0&&lines[activeIndex]!==undefined){
+      el.className="nowloop show";
+      el.innerHTML='<span class="spin"></span><div class="lt"><b>🔁 Đang lặp câu '+(activeIndex+1)+' ∞</b><span></span></div><button class="stopb">Dừng</button>';
+      el.querySelector(".lt span").textContent=lines[activeIndex];
+      el.querySelector(".stopb").onclick=()=>{stopCurrent();status("Đã dừng.","",false);};
+    }else{el.className="nowloop";el.innerHTML="";}
+  }
+
+  function loadList(){
+    const raw=textEl.value;
+    lines=raw.split(/\r?\n/).map(s=>s.replace(/^\s*\d+\s*[.\)\）:：、．。\-]+\s*/,"").trim()).filter(Boolean);
+    stopAll();activeIndex=-1;selectedSet.clear();
+    try{localStorage.setItem("ttsloop_text",raw);}catch(e){}
+    if(!lines.length){status("Không tìm thấy câu nào. Mỗi câu một dòng.","err",false);render();return;}
+    status("Đã nạp "+lines.length+" câu. Bấm ▶ để luyện.","ok",false);render();
+  }
+
+  /* ===== Events ===== */
+  $("#langTabs").addEventListener("click",e=>{
+    const t=e.target.closest(".ltab");if(!t)return;
+    [...e.currentTarget.children].forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");currentLang=t.dataset.lang;refreshVoices();render();
+  });
   volEl.oninput=()=>{const v=parseInt(volEl.value,10);volVal.textContent=v+"%";volVal.classList.toggle("boost",v>100);applyVolume();updateVolHint();};
   rateEl.oninput=()=>{const v=parseInt(rateEl.value,10);rateVal.textContent=(v>=0?"+":"")+v+"%";};
   pitchEl.oninput=()=>{const v=parseInt(pitchEl.value,10);pitchVal.textContent=(v>=0?"+":"")+v;};
   gapEl.oninput=()=>{gapVal.textContent=parseFloat(gapEl.value).toFixed(1)+"s";};
   limiterEl.onchange=()=>{if(audioCtx)rebuildChain();};
-  workerEl.oninput=()=>{try{localStorage.setItem("ttsloop_worker",workerEl.value.trim());}catch(e){}updateModeBadge();refreshVoices();updateVolHint();render();};
-  $("#loadBtn").onclick=loadList;$("#pregenBtn").onclick=pregenAll;$("#clearBtn").onclick=async()=>{stopAll();activeIndex=-1;lines=[];selectedIndices.clear();mem.clear();await idbClear();try{localStorage.removeItem("ttsloop_text");}catch(e){}render();status("Đã xóa cache & danh sách","",false);};
-  $("#mergeSelBtn").onclick=()=>mergeSelectedToMp3(false);$("#mergeAllBtn").onclick=()=>mergeSelectedToMp3(true);$("#splitSelBtn").onclick=splitSelectedLines;$("#selectAllBtn").onclick=selectAll;$("#deselectAllBtn").onclick=deselectAll;
-  $("#langPills").addEventListener("click",e=>{const p=e.target.closest(".pill");if(!p)return;[...e.currentTarget.children].forEach(x=>x.classList.remove("active"));p.classList.add("active");currentLang=p.dataset.lang;refreshVoices();render();});
+  workerEl.oninput=()=>{
+    try{localStorage.setItem("ttsloop_worker",workerEl.value.trim());}catch(e){}
+    updateModeBadge();refreshVoices();updateVolHint();render();
+  };
+  $("#loadBtn").onclick=loadList;
+  $("#pregenBtn").onclick=pregenAll;
+  $("#dlAllBtn").onclick=downloadAll;
+  $("#selAllBtn").onclick=()=>{lines.forEach((_,i)=>selectedSet.add(i));render();};
+  $("#deselAllBtn").onclick=()=>{selectedSet.clear();render();};
+  $("#mergeBtn").onclick=mergeSelected;
+  $("#clearBtn").onclick=async()=>{
+    stopAll();activeIndex=-1;lines=[];selectedSet.clear();mem.clear();
+    await idbClear();try{localStorage.removeItem("ttsloop_text");}catch(e){}
+    render();status("Đã xóa danh sách và cache.","",false);
+  };
+  $("#splitCancel").onclick=closeSplitModal;
+  $("#splitConfirm").onclick=doSplit;
+  $("#splitAutoBtn").onclick=doAutoSplit;
+  splitModal.onclick=e=>{if(e.target===splitModal)closeSplitModal();};
+
   if(window.speechSynthesis){loadSpeechVoices();speechSynthesis.onvoiceschanged=()=>{loadSpeechVoices();if(!isEdge())refreshVoices();};}
+
+  /* ===== Init ===== */
   try{const w=localStorage.getItem("ttsloop_worker");if(w)workerEl.value=w;}catch(e){}
   updateModeBadge();updateVolHint();refreshVoices();
   try{const saved=localStorage.getItem("ttsloop_text");if(saved){textEl.value=saved;loadList();}else render();}catch(e){render();}
@@ -238,4 +835,3 @@ Here is an HTML document that implements a TTS sentence looping tool with advanc
 </script>
 </body>
 </html>
-```
