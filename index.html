@@ -397,7 +397,8 @@ details b{color:var(--text)}
   let selectedSet=new Set();
   let splitModalIdx=-1,splitPt=-1,splitWords=[];
   let voiceRotate=false;
-  const savedVoice={}; // saved voice per lang: {en:"en-US-AriaNeural", ...}
+  const savedVoice={}; // saved voice per lang+mode: {"en|ms":"en-US-AriaNeural","en|device":"Google US English", ...}
+  const svKey=()=>currentLang+(isEdge()?"|ms":"|device");
 
   /* ===== Worker/mode ===== */
   const workerUrl=()=>(workerEl.value||"").trim().replace(/\/+$/,"");
@@ -527,7 +528,10 @@ details b{color:var(--text)}
   /* ===== Speech synthesis ===== */
   function loadSpeechVoices(){try{speechVoices=window.speechSynthesis?speechSynthesis.getVoices():[];}catch(e){speechVoices=[];}}
   function voicesForLang(){return speechVoices.filter(v=>(v.lang||"").toLowerCase().startsWith(currentLang));}
-  function selectedSpeechVoice(){return speechVoices.find(v=>v.name===voiceEl.value)||voicesForLang()[0]||null;}
+  function selectedSpeechVoice(){
+    const fresh=window.speechSynthesis?speechSynthesis.getVoices():speechVoices;
+    return fresh.find(v=>v.name===voiceEl.value)||fresh.filter(v=>(v.lang||"").toLowerCase().startsWith(currentLang))[0]||null;
+  }
   function stopSpeech(){speechActive=false;if(loopTimer){clearTimeout(loopTimer);loopTimer=null;}try{speechSynthesis.cancel();}catch(e){}}
   function speakLoop(i){
     speechActive=true;isPlaying=true;
@@ -760,7 +764,8 @@ details b{color:var(--text)}
     updateRotateUI();
   }
   function refreshVoices(){
-    const prev=savedVoice[currentLang]||voiceEl.value;voiceEl.innerHTML="";
+    const key=svKey();
+    const prev=savedVoice[key]||"";voiceEl.innerHTML="";
     if(isEdge()){
       (MS_VOICES[currentLang]||[]).forEach(v=>{const o=document.createElement("option");o.value=v.id;o.textContent=v.label;voiceEl.appendChild(o);});
     }else{
@@ -768,7 +773,9 @@ details b{color:var(--text)}
       if(!vs.length){const o=document.createElement("option");o.value="";o.textContent="(thiết bị chưa có giọng cho ngôn ngữ này)";voiceEl.appendChild(o);}
       vs.forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name+(v.localService?"":" · online");voiceEl.appendChild(o);});
     }
-    if([...voiceEl.options].some(o=>o.value===prev))voiceEl.value=prev;
+    if(prev&&[...voiceEl.options].some(o=>o.value===prev))voiceEl.value=prev;
+    // Fix 1: sync savedVoice to whatever the select actually landed on
+    savedVoice[key]=voiceEl.value;
     updateRotateUI();
   }
   function updateVolHint(){
@@ -880,7 +887,7 @@ details b{color:var(--text)}
     t.classList.add("active");currentLang=t.dataset.lang;refreshVoices();render();
   });
   voiceEl.onchange=()=>{
-    savedVoice[currentLang]=voiceEl.value;
+    savedVoice[svKey()]=voiceEl.value;
     // If playing, stop so user hears new voice on next play
     if(isPlaying){stopAll();activeIndex=-1;render();status("Đã đổi giọng. Bấm ▶ để nghe lại.","",false);}
   };
