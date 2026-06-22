@@ -6,11 +6,12 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%23ff7a45'/%3E%3Cpath d='M7 9v6h3l4 4V5l-4 4H7z' fill='%230c0e13'/%3E%3C/svg%3E">
-<title>TTS Loop · Listening Practice</title>
+<title>TTS Loop · Listening & Reading Practice</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+/* ——— base ——— */
 :root{--bg:#0c0e13;--panel:#14171f;--panel-2:#1b1f2a;--line:#272c39;--text:#eef1f7;--muted:#8b93a7;
   --accent:#ff7a45;--accent-2:#37d2c4;--good:#5fd07a;--bad:#ff5c6c;--warn:#ffd166;--radius:18px;--shadow:0 24px 60px -28px rgba(0,0,0,.8)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -82,8 +83,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
 .status.err{color:var(--bad)}.status.ok{color:var(--good)}
 
-/* ===== Sentence rows with highlight & notes ===== */
-.prow{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px;padding:10px 11px;border-radius:12px;background:#0e1118;border:1px solid var(--line);margin-top:7px;transition:.15s}
+/* ——— sentence rows ——— */
+.prow{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px;padding:10px 11px;border-radius:12px;background:#0e1118;border:1px solid var(--line);margin-top:7px;transition:.15s;position:relative}
 .prow.active{background:rgba(255,122,69,.15);border-color:var(--accent);box-shadow:0 0 20px rgba(255,122,69,.2), inset 0 0 15px rgba(255,122,69,.05)}
 .prow.cached .num{border-color:var(--accent-2)}
 .prow.selected{border-color:var(--warn)!important;background:rgba(255,209,102,.05)!important}
@@ -91,7 +92,14 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 .num{flex:none;width:24px;height:24px;border-radius:7px;background:var(--panel-2);border:1px solid var(--line);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--muted);font-family:"Bricolage Grotesque",sans-serif;margin-top:5px}
 .prow.active .num{background:var(--accent);color:#0c0e13;border-color:var(--accent)}
 .row-main{flex:1;min-width:0}
-.ptxt{font-size:14px;line-height:1.5;padding-top:4px;word-break:break-word}
+.ptxt{font-size:14px;line-height:1.6;padding-top:4px;word-break:break-word;user-select:text;cursor:text}
+.ptxt .hl{display:inline;padding:1px 0;border-radius:2px}
+.ptxt .hl-yellow{background:#ffeb3b;color:#000}
+.ptxt .hl-pink{background:#ff8a80;color:#000}
+.ptxt .hl-green{background:#80cbc4;color:#000}
+.ptxt .hl-orange{background:#ffab91;color:#000}
+.ptxt .hl-purple{background:#b39ddb;color:#000}
+.ptxt .hl-gold{background:#ffd54f;color:#000}
 .prow.active .ptxt{color:#fff;text-shadow:0 0 8px rgba(255,122,69,.3)}
 .waveform-wrap{margin-top:6px;border-radius:6px;overflow:hidden;background:rgba(55,210,196,.05);border:1px solid rgba(55,210,196,.15)}
 .waveform-cv{display:block;width:100%;height:30px}
@@ -123,7 +131,34 @@ details p{font-size:12.5px;color:var(--muted);line-height:1.7;margin:10px 0 0}
 details a{color:var(--accent-2)}details code{background:#0e1118;padding:1px 6px;border-radius:6px;font-size:12px}
 details b{color:var(--text)}
 
-/* ===== Split Modal ===== */
+/* ——— Highlight floating toolbar ——— */
+#highlightToolbar{
+  position:fixed;z-index:999;display:none;
+  background:#1b1f2a;border:1px solid var(--line);border-radius:12px;
+  padding:8px 10px;box-shadow:0 16px 48px rgba(0,0,0,.8);
+  flex-wrap:wrap;align-items:center;gap:6px;max-width:300px;
+  backdrop-filter:blur(8px);
+}
+#highlightToolbar.show{display:flex}
+#highlightToolbar .h-color{
+  width:28px;height:28px;border-radius:50%;border:2px solid transparent;
+  cursor:pointer;transition:.15s;flex:none;
+}
+#highlightToolbar .h-color:hover{border-color:#fff;transform:scale(1.1)}
+#highlightToolbar .h-color.active{border-color:#fff;box-shadow:0 0 12px currentColor}
+#highlightToolbar .h-add{
+  width:28px;height:28px;border-radius:50%;border:2px dashed var(--muted);
+  background:transparent;color:var(--muted);font-size:18px;font-weight:700;
+  display:grid;place-items:center;cursor:pointer;transition:.15s;flex:none;
+}
+#highlightToolbar .h-add:hover{border-color:var(--text);color:var(--text)}
+#highlightToolbar .h-clear{
+  background:var(--bad);color:#0c0e13;border:none;border-radius:20px;
+  padding:2px 8px;font-size:11px;font-weight:700;cursor:pointer;
+  margin-left:4px;flex:none;
+}
+
+/* ——— split modal ——— */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:center;justify-content:center;padding:18px}
 .modal-overlay.show{display:flex}
 .modal-box{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;width:100%;max-width:500px;box-shadow:var(--shadow);max-height:90dvh;overflow-y:auto}
@@ -237,6 +272,7 @@ details b{color:var(--text)}
     <p><b>Practice:</b> press ▶ on any sentence to loop infinitely. Press another sentence to switch. Press again to stop.</p>
     <p><b>Select &amp; Merge:</b> tick the checkbox on the left of each sentence to select. When ≥2 selected, "Merge" lights up — click to join them into one.</p>
     <p><b>Split:</b> click ✂ on a sentence to open the split dialog. Click between words to choose split point, or use "Auto split" by punctuation.</p>
+    <p><b>Highlight text:</b> select any portion of text in a sentence, then choose a color from the floating toolbar. Click <strong>➕</strong> to add a custom color.</p>
     <p><b>Waveform:</b> when a sentence is synthesised (Microsoft Neural), a waveform appears below the text.</p>
     <p><b>Download all MP3:</b> click "⬇ Download all MP3" to synthesise and merge all sentences into a single MP3 file.</p>
     <p><b>Two modes:</b><br>
@@ -244,6 +280,11 @@ details b{color:var(--text)}
       • <b>Microsoft Neural</b>: high quality, MP3 download, volume &gt;100%. Requires Cloudflare Worker.</p>
     <p><b>Create Worker:</b> go to <a href="https://dash.cloudflare.com" target="_blank">dash.cloudflare.com</a> → Workers → Create → Deploy → Edit code → paste <code>worker.js</code> → Deploy → copy URL and paste above.</p>
   </details>
+</div>
+
+<!-- Highlight floating toolbar -->
+<div id="highlightToolbar">
+  <!-- colors will be injected here -->
 </div>
 
 <!-- Split Modal -->
@@ -374,6 +415,7 @@ details b{color:var(--text)}
   const splitModal=$("#splitModal"),splitWordsEl=$("#splitWords"),splitPreviewEl=$("#splitPreview");
   const sp1El=$("#sp1"),sp2El=$("#sp2"),splitConfirmBtn=$("#splitConfirm");
   const voiceRotateEl=$("#voiceRotate"),rotatePreviewEl=$("#rotatePreview"),rotateToggleRow=$("#rotateToggleRow");
+  const highlightToolbar=$("#highlightToolbar");
 
   /* ===== State ===== */
   let currentLang="en",lines=[],activeIndex=-1,isPlaying=false,busy=false,speechVoices=[];
@@ -384,6 +426,11 @@ details b{color:var(--text)}
   const savedVoice = {};
   const notes = {}; // index -> note text
   const svKey=()=>currentLang+(isEdge()?"|ms":"|device");
+
+  // Highlight state
+  let highlights = {}; // key: index -> array of {start, end, color}
+  let highlightColors = ['#ffeb3b', '#ff8a80', '#80cbc4', '#ffab91', '#b39ddb', '#ffd54f'];
+  let selectedRange = null; // store range when user selects text
 
   /* ===== Worker/mode ===== */
   const workerUrl=()=>(workerEl.value||"").trim().replace(/\/+$/,"");
@@ -629,57 +676,21 @@ details b{color:var(--text)}
     lines.splice(sorted[0],0,merged);
     if(activeIndex>=0){stopAll();activeIndex=-1;}
     selectedSet.clear();
-    // Remove notes for merged lines, keep note for new merged line? We'll keep the first note.
-    // For simplicity, clear notes for removed indices.
-    const newNotes={};
-    for(let i=0;i<lines.length;i++){
-      if(i===sorted[0]){ // merged line: keep note from first selected?
-        const firstNote = notes[sorted[0]] || '';
-        if(firstNote) newNotes[i] = firstNote;
-      } else {
-        // remap indices: for each original index, if not selected, shift to new index.
-        // easier: rebuild notes from scratch.
-      }
+    // Shift highlights and notes
+    const newHighlights={}; const newNotes={};
+    let offset=0;
+    for(let i=0;i<lines.length + sorted.length;i++){
+      if(selectedSet.has(i)){offset++; continue;}
+      const oldIdx=i;
+      const newIdx=i-offset;
+      if(oldIdx!==sorted[0] && highlights[oldIdx]) newHighlights[newIdx]=highlights[oldIdx];
+      if(oldIdx!==sorted[0] && notes[oldIdx]) newNotes[newIdx]=notes[oldIdx];
     }
-    // Rebuild notes: we'll keep notes for all remaining lines, shifting indices.
-    const oldNotes = {...notes};
-    const remainingIndices = lines.map((_,idx)=>idx); // we'll loop
-    // Actually easier: just clear notes and let user re-add.
-    // But we can attempt to preserve notes for unmerged lines.
-    // We'll create a map from new index to old index.
-    let newIdx=0;
-    const newNotesMap = {};
-    for(let oldIdx=0; oldIdx<lines.length + sorted.length; oldIdx++){
-      if(selectedSet.has(oldIdx)) continue;
-      if(oldIdx === sorted[0]) { // merged line: we already handled above
-        continue;
-      }
-      // this oldIdx maps to newIdx
-      // but we need to know where merged line is inserted.
-      // This is messy; for simplicity, we'll just clear notes and let users re-enter.
-      // But we can keep notes for lines that are not selected and not the merged position.
-      // We'll just do a simple reconstruction.
-    }
-    // For simplicity, we'll just reset notes object and let user re-enter.
-    // But we can try to preserve notes for lines that are not selected.
-    const newNotes2 = {};
-    let offset = 0;
-    for(let i=0; i<lines.length + sorted.length; i++){
-      if(selectedSet.has(i)){
-        offset++;
-        continue;
-      }
-      const oldIdx = i;
-      const newIdx = i - offset;
-      if(oldIdx !== sorted[0] && notes[oldIdx]) {
-        newNotes2[newIdx] = notes[oldIdx];
-      }
-    }
-    // Clear notes and assign newNotes2
-    for(let key in notes) delete notes[key];
-    for(let key in newNotes2) notes[key] = newNotes2[key];
+    highlights = newHighlights;
+    for(let k in notes) delete notes[k];
+    for(let k in newNotes) notes[k]=newNotes[k];
+    saveHighlights(); saveNotes();
     render();status("Merged "+sorted.length+" sentences into 1.","ok",false);
-    saveNotes();
   }
 
   /* ===== Split Modal ===== */
@@ -747,33 +758,35 @@ details b{color:var(--text)}
     const left=splitWords.slice(0,splitPt).join(" ").trim();
     const right=splitWords.slice(splitPt).join(" ").trim();
     if(!left||!right)return;
-    const oldNote = notes[splitModalIdx] || '';
+    const oldNote=notes[splitModalIdx]||'';
+    const oldHighlights=highlights[splitModalIdx]||[];
     lines.splice(splitModalIdx,1,left,right);
-    // shift notes
-    const newNotes = {};
+    // shift highlights and notes
+    const newHighlights={}; const newNotes={};
     let idx=0;
-    for(let i=0; i<lines.length; i++){
+    for(let i=0;i<lines.length;i++){
       if(i===splitModalIdx){
-        // first part
-        newNotes[i] = oldNote;
-        // second part
-        newNotes[i+1] = '';
-        // skip one
+        // first part: keep old highlights if they fit within left length? For simplicity, copy to first part
+        newHighlights[i]=oldHighlights.map(h=>({...h}));
+        newNotes[i]=oldNote;
         i++;
+        newHighlights[i]=[];
+        newNotes[i]='';
       } else {
-        // remap: if i > splitModalIdx, we need to shift from old notes
         const oldIdx = i > splitModalIdx ? i-1 : i;
-        if(notes[oldIdx] !== undefined) newNotes[i] = notes[oldIdx];
+        if(highlights[oldIdx]) newHighlights[i]=highlights[oldIdx];
+        if(notes[oldIdx]) newNotes[i]=notes[oldIdx];
       }
     }
-    for(let key in notes) delete notes[key];
-    for(let key in newNotes) notes[key] = newNotes[key];
+    highlights = newHighlights;
+    for(let k in notes) delete notes[k];
+    for(let k in newNotes) notes[k]=newNotes[k];
     if(activeIndex===splitModalIdx){stopAll();activeIndex=-1;}
     else if(activeIndex>splitModalIdx)activeIndex++;
     selectedSet.clear();
     closeSplitModal();
+    saveHighlights(); saveNotes();
     render();status("Split sentence "+(splitModalIdx+1)+" into 2.","ok",false);
-    saveNotes();
   }
   function closeSplitModal(){
     splitModal.classList.remove("show");
@@ -803,22 +816,16 @@ details b{color:var(--text)}
   }
 
   /* ===== Notes ===== */
-  function saveNotes(){
-    try{localStorage.setItem('ttsloop_notes',JSON.stringify(notes));}catch(e){}
-  }
-  function loadNotes(){
-    try{const data=localStorage.getItem('ttsloop_notes');if(data){const parsed=JSON.parse(data);for(let k in parsed)notes[k]=parsed[k];}}catch(e){}
-  }
+  function saveNotes(){try{localStorage.setItem('ttsloop_notes',JSON.stringify(notes));}catch(e){}}
+  function loadNotes(){try{const data=localStorage.getItem('ttsloop_notes');if(data){const parsed=JSON.parse(data);for(let k in parsed)notes[k]=parsed[k];}}catch(e){}}
   function toggleNote(i){
     const row = document.querySelector(`.prow[data-index="${i}"]`);
     if(!row)return;
     const area = row.querySelector('.note-area');
     if(area){
       area.classList.toggle('open');
-      // update button active state
       const btn = row.querySelector('.rb-note');
       if(btn) btn.classList.toggle('active');
-      // focus textarea if opening
       if(area.classList.contains('open')){
         const ta = area.querySelector('textarea');
         if(ta) setTimeout(()=>ta.focus(),100);
@@ -829,6 +836,223 @@ details b{color:var(--text)}
     if(val.trim()) notes[i] = val.trim();
     else delete notes[i];
     saveNotes();
+  }
+
+  /* ===== Highlights ===== */
+  function saveHighlights(){
+    try{localStorage.setItem('ttsloop_highlights',JSON.stringify(highlights));}catch(e){}
+  }
+  function loadHighlights(){
+    try{const data=localStorage.getItem('ttsloop_highlights');if(data){const parsed=JSON.parse(data);for(let k in parsed)highlights[k]=parsed[k];}}catch(e){}
+  }
+  function saveColors(){
+    try{localStorage.setItem('ttsloop_colors',JSON.stringify(highlightColors));}catch(e){}
+  }
+  function loadColors(){
+    try{const data=localStorage.getItem('ttsloop_colors');if(data){const parsed=JSON.parse(data);if(Array.isArray(parsed)&&parsed.length)highlightColors=parsed;}}catch(e){}
+  }
+
+  function buildHighlightedHTML(text, hlArray){
+    if(!hlArray || !hlArray.length) return escHtml(text);
+    // sort by start
+    const sorted = hlArray.slice().sort((a,b)=>a.start-b.start);
+    // build segments
+    let segments = [{text: '', color: null}];
+    let pos=0;
+    for(const h of sorted){
+      if(h.start > pos){
+        segments.push({text: text.slice(pos, h.start), color: null});
+        pos = h.start;
+      }
+      if(h.end > pos){
+        // color from h.start to h.end
+        segments.push({text: text.slice(h.start, h.end), color: h.color});
+        pos = h.end;
+      }
+      // if h.start < pos, skip (overlap) – we'll just ignore
+    }
+    if(pos < text.length){
+      segments.push({text: text.slice(pos), color: null});
+    }
+    // merge adjacent same color
+    const merged = [];
+    for(const seg of segments){
+      if(!seg.text) continue;
+      if(merged.length && merged[merged.length-1].color === seg.color){
+        merged[merged.length-1].text += seg.text;
+      } else {
+        merged.push({text: seg.text, color: seg.color});
+      }
+    }
+    // build html
+    let html = '';
+    for(const seg of merged){
+      if(seg.color){
+        html += `<span class="hl" style="background:${seg.color};color:#000;padding:1px 0;border-radius:2px;">${escHtml(seg.text)}</span>`;
+      } else {
+        html += escHtml(seg.text);
+      }
+    }
+    return html;
+  }
+
+  function applyHighlight(index, start, end, color){
+    if(!highlights[index]) highlights[index] = [];
+    // Remove any highlight that is exactly contained? We'll just add, overlapping allowed.
+    highlights[index].push({start, end, color});
+    // Optional: merge overlapping? For now, keep simple.
+    saveHighlights();
+    render();
+  }
+
+  function clearHighlights(index){
+    delete highlights[index];
+    saveHighlights();
+    render();
+  }
+
+  /* ===== Highlight Toolbar ===== */
+  function renderToolbar(){
+    let html = '';
+    highlightColors.forEach(c => {
+      html += `<div class="h-color" style="background:${c};" data-color="${c}"></div>`;
+    });
+    html += `<div class="h-add" title="Add custom color">➕</div>`;
+    html += `<button class="h-clear" id="clearHighlightBtn" title="Clear highlights for this sentence">✕ clear</button>`;
+    highlightToolbar.innerHTML = html;
+    // attach events
+    highlightToolbar.querySelectorAll('.h-color').forEach(el => {
+      el.onclick = () => {
+        const color = el.dataset.color;
+        if(selectedRange && selectedRange.startContainer){
+          const idx = getSentenceIndexFromNode(selectedRange.startContainer);
+          if(idx !== undefined && idx >=0 && idx < lines.length){
+            const offsets = getOffsetsFromRange(selectedRange, idx);
+            if(offsets){
+              applyHighlight(idx, offsets.start, offsets.end, color);
+            }
+          }
+        }
+        hideToolbar();
+      };
+    });
+    highlightToolbar.querySelector('.h-add').onclick = (e) => {
+      e.stopPropagation();
+      const input = document.createElement('input');
+      input.type = 'color';
+      input.value = '#ffeb3b';
+      input.onchange = (ev) => {
+        const newColor = ev.target.value;
+        if(!highlightColors.includes(newColor)){
+          highlightColors.push(newColor);
+          saveColors();
+          renderToolbar();
+        }
+        // apply to current selection
+        if(selectedRange && selectedRange.startContainer){
+          const idx = getSentenceIndexFromNode(selectedRange.startContainer);
+          if(idx !== undefined && idx >=0 && idx < lines.length){
+            const offsets = getOffsetsFromRange(selectedRange, idx);
+            if(offsets){
+              applyHighlight(idx, offsets.start, offsets.end, newColor);
+            }
+          }
+        }
+        hideToolbar();
+      };
+      input.click();
+    };
+    highlightToolbar.querySelector('#clearHighlightBtn').onclick = () => {
+      if(selectedRange && selectedRange.startContainer){
+        const idx = getSentenceIndexFromNode(selectedRange.startContainer);
+        if(idx !== undefined && idx >=0 && idx < lines.length){
+          clearHighlights(idx);
+        }
+      }
+      hideToolbar();
+    };
+  }
+
+  function getSentenceIndexFromNode(node){
+    let el = node.nodeType === 3 ? node.parentElement : node;
+    while(el){
+      if(el.classList && el.classList.contains('prow')){
+        return parseInt(el.dataset.index, 10);
+      }
+      el = el.parentElement;
+    }
+    return undefined;
+  }
+
+  function getOffsetsFromRange(range, idx){
+    // We need to compute start and end offset in the plain text (lines[idx])
+    const text = lines[idx];
+    // Get the selected text
+    const selText = range.toString();
+    // Find position in text
+    let start = text.indexOf(selText);
+    if(start === -1){
+      // try to find by trimming?
+      start = text.indexOf(selText.trim());
+      if(start === -1) return null;
+    }
+    const end = start + selText.length;
+    return {start, end};
+  }
+
+  function showToolbar(range){
+    selectedRange = range;
+    const rect = range.getBoundingClientRect();
+    const left = rect.left + (rect.width/2) - 80;
+    const top = rect.bottom + 6;
+    highlightToolbar.style.left = Math.max(10, left) + 'px';
+    highlightToolbar.style.top = (top + window.scrollY) + 'px';
+    highlightToolbar.classList.add('show');
+  }
+
+  function hideToolbar(){
+    highlightToolbar.classList.remove('show');
+    selectedRange = null;
+  }
+
+  // selection change handler
+  function onSelectionChange(){
+    const sel = window.getSelection();
+    if(!sel.rangeCount || sel.isCollapsed){
+      hideToolbar();
+      return;
+    }
+    const range = sel.getRangeAt(0);
+    if(!range || range.collapsed){
+      hideToolbar();
+      return;
+    }
+    // check if selection is inside a .ptxt
+    let container = range.commonAncestorContainer;
+    let ptxt = container.nodeType === 3 ? container.parentElement : container;
+    while(ptxt){
+      if(ptxt.classList && ptxt.classList.contains('ptxt')){
+        break;
+      }
+      ptxt = ptxt.parentElement;
+    }
+    if(!ptxt){
+      hideToolbar();
+      return;
+    }
+    // ensure it's within a sentence row
+    const row = ptxt.closest('.prow');
+    if(!row){
+      hideToolbar();
+      return;
+    }
+    const idx = parseInt(row.dataset.index, 10);
+    if(isNaN(idx) || idx < 0 || idx >= lines.length){
+      hideToolbar();
+      return;
+    }
+    // show toolbar
+    showToolbar(range);
   }
 
   /* ===== Render ===== */
@@ -874,6 +1098,7 @@ details b{color:var(--text)}
       const cached=edge&&isCached(metaFor(line,voiceId));
       const sel=selectedSet.has(i);
       const hasNote = notes[i] && notes[i].trim().length>0;
+      const hlArray = highlights[i] || [];
 
       const row=document.createElement("div");
       row.className="prow"+(active?" active":"")+(cached?" cached":"")+(sel?" selected":"");
@@ -893,7 +1118,13 @@ details b{color:var(--text)}
 
       // Main area (text + waveform + note)
       const main=document.createElement("div");main.className="row-main";
-      const ptxt=document.createElement("div");ptxt.className="ptxt";ptxt.textContent=line;
+      const ptxt=document.createElement("div");ptxt.className="ptxt";
+      // Build highlighted text
+      if(hlArray.length){
+        ptxt.innerHTML = buildHighlightedHTML(line, hlArray);
+      } else {
+        ptxt.textContent = line;
+      }
       if(voiceRotate&&edge){
         const vl=voiceLabelForLine(i);
         if(vl){const badge=document.createElement("span");badge.className="voice-badge"+(vl.gender==='m'?" male":"");badge.textContent=(vl.gender==='f'?"♀ ":"♂ ")+vl.label;ptxt.appendChild(document.createElement("br"));ptxt.appendChild(badge);}
@@ -955,6 +1186,7 @@ details b{color:var(--text)}
       row.appendChild(chk);row.appendChild(num);row.appendChild(main);row.appendChild(btns);
       listEl.appendChild(row);
     });
+    renderToolbar();
   }
 
   function updateNowloop(){
@@ -971,11 +1203,14 @@ details b{color:var(--text)}
     const raw=textEl.value;
     lines=raw.split(/\r?\n/).map(s=>s.replace(/^\s*\d+\s*[.\)\）:：、．。\-]+\s*/,"").trim()).filter(Boolean);
     stopAll();activeIndex=-1;selectedSet.clear();
-    // clear notes for lines that are no longer present
+    // remove highlights and notes for out-of-range indices
+    for(let key in highlights){
+      if(parseInt(key)>=lines.length) delete highlights[key];
+    }
     for(let key in notes){
       if(parseInt(key)>=lines.length) delete notes[key];
     }
-    saveNotes();
+    saveHighlights(); saveNotes();
     try{localStorage.setItem("ttsloop_text",raw);}catch(e){}
     if(!lines.length){status("No sentences found. One per line.","err",false);render();return;}
     updateRotateUI();
@@ -1011,6 +1246,7 @@ details b{color:var(--text)}
   $("#clearBtn").onclick=async()=>{
     stopAll();activeIndex=-1;lines=[];selectedSet.clear();mem.clear();
     for(let key in notes) delete notes[key]; saveNotes();
+    for(let key in highlights) delete highlights[key]; saveHighlights();
     await idbClear();try{localStorage.removeItem("ttsloop_text");}catch(e){}
     render();status("Cleared list and cache.","",false);
   };
@@ -1019,13 +1255,27 @@ details b{color:var(--text)}
   $("#splitAutoBtn").onclick=doAutoSplit;
   splitModal.onclick=e=>{if(e.target===splitModal)closeSplitModal();};
 
+  // Selection change
+  document.addEventListener('selectionchange', onSelectionChange);
+
+  // Click outside toolbar to hide
+  document.addEventListener('mousedown', (e) => {
+    if(!highlightToolbar.contains(e.target)){
+      // but only if we are not inside a selection? We'll let selectionchange handle.
+    }
+  });
+
   if(window.speechSynthesis){loadSpeechVoices();speechSynthesis.onvoiceschanged=()=>{loadSpeechVoices();if(!isEdge())refreshVoices();};}
 
   /* ===== Init ===== */
   try{const w=localStorage.getItem("ttsloop_worker");if(w)workerEl.value=w;}catch(e){}
   loadNotes();
+  loadHighlights();
+  loadColors();
   updateModeBadge();updateVolHint();refreshVoices();
   try{const saved=localStorage.getItem("ttsloop_text");if(saved){textEl.value=saved;loadList();}else render();}catch(e){render();}
+  // initial toolbar render
+  renderToolbar();
 })();
 </script>
 </body>
