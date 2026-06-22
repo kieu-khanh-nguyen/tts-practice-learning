@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%23ff7a45'/%3E%3Cpath d='M7 9v6h3l4 4V5l-4 4H7z' fill='%230c0e13'/%3E%3C/svg%3E">
-<title>TTS Loop · Luyện nghe</title>
+<title>TTS Loop · Listening Practice</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -34,13 +34,10 @@ textarea{width:100%;min-height:128px;resize:vertical;border-radius:14px;backgrou
 textarea:focus{border-color:var(--accent)}
 input[type=text]{width:100%;border-radius:12px;background:#0e1118;border:1px solid var(--line);color:var(--text);padding:12px 14px;font-family:inherit;font-size:14px;outline:none}
 input[type=text]:focus{border-color:var(--accent)}
-
-/* Lang tabs — scrollable */
 .lang-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .lang-tabs::-webkit-scrollbar{display:none}
 .ltab{flex:none;padding:8px 14px;border-radius:10px;cursor:pointer;background:#0e1118;border:1px solid var(--line);color:var(--muted);font-weight:600;font-size:13px;transition:.15s;user-select:none;white-space:nowrap}
 .ltab.active{color:#0c0e13;background:var(--accent);border-color:var(--accent)}
-
 select{width:100%;border-radius:12px;background:#0e1118;border:1px solid var(--line);color:var(--text);padding:12px 14px;font-family:inherit;font-size:15px;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%238b93a7' stroke-width='2'%3E%3Cpath d='M3 5l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
 select:focus{border-color:var(--accent)}
 .row{display:flex;gap:12px}.row>div{flex:1}.mt{margin-top:16px}
@@ -60,12 +57,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 .knob::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:.18s}
 .toggle input:checked + .knob{background:var(--accent-2)}
 .toggle input:checked + .knob::after{transform:translateX(17px)}
-
-/* List header */
 .listhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .listhead h3{font-family:"Bricolage Grotesque",sans-serif;margin:0;font-size:17px;font-weight:700}
-
-/* Toolbar */
 .toolbar-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .tbtn{border:1px solid var(--line);background:#0e1118;color:var(--text);border-radius:10px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:.14s;white-space:nowrap}
 .tbtn:hover{border-color:var(--muted)}
@@ -75,12 +68,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 .tbtn.t-merge{border-color:var(--good);color:var(--good)}
 .tbtn.t-dlall{border-color:var(--accent);color:var(--accent)}
 .tbtn.t-danger{border-color:var(--bad);color:var(--bad)}
-
-/* Download progress */
 .dl-progress{height:3px;border-radius:2px;background:var(--line);overflow:hidden;margin-bottom:8px;display:none}
 .dl-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));width:0;transition:width .3s}
-
-/* Now-loop banner */
 .nowloop{display:none;align-items:center;gap:11px;background:rgba(255,122,69,.1);border:1px solid var(--accent);border-radius:12px;padding:12px 14px;margin-bottom:6px}
 .nowloop.show{display:flex}
 .nowloop .lt{flex:1;min-width:0}
@@ -88,30 +77,24 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 .nowloop .lt span{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nowloop .spin{width:9px;height:9px;border-radius:50%;background:var(--accent);flex:none;animation:pulse 1s infinite}
 .nowloop .stopb{flex:none;border:none;border-radius:10px;background:var(--text);color:#0c0e13;font-weight:700;font-family:inherit;padding:9px 15px;cursor:pointer;font-size:13px}
-
-/* Status */
 .status{margin:8px 0 4px;font-size:13.5px;min-height:20px;color:var(--muted);display:flex;align-items:center;gap:8px}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--accent-2);flex:none;animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
 .status.err{color:var(--bad)}.status.ok{color:var(--good)}
 
-/* Sentence rows */
-.prow{display:flex;align-items:flex-start;gap:8px;padding:10px 11px;border-radius:12px;background:#0e1118;border:1px solid var(--line);margin-top:7px;transition:.15s}
-.prow.active{border-color:var(--accent);background:rgba(255,122,69,.07)}
+/* ===== Sentence rows with highlight & notes ===== */
+.prow{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px;padding:10px 11px;border-radius:12px;background:#0e1118;border:1px solid var(--line);margin-top:7px;transition:.15s}
+.prow.active{background:rgba(255,122,69,.15);border-color:var(--accent);box-shadow:0 0 20px rgba(255,122,69,.2), inset 0 0 15px rgba(255,122,69,.05)}
 .prow.cached .num{border-color:var(--accent-2)}
 .prow.selected{border-color:var(--warn)!important;background:rgba(255,209,102,.05)!important}
-
 .row-chk{flex:none;margin-top:9px;width:16px;height:16px;accent-color:var(--warn);cursor:pointer;border-radius:4px}
 .num{flex:none;width:24px;height:24px;border-radius:7px;background:var(--panel-2);border:1px solid var(--line);display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--muted);font-family:"Bricolage Grotesque",sans-serif;margin-top:5px}
 .prow.active .num{background:var(--accent);color:#0c0e13;border-color:var(--accent)}
 .row-main{flex:1;min-width:0}
 .ptxt{font-size:14px;line-height:1.5;padding-top:4px;word-break:break-word}
-
-/* Waveform canvas */
+.prow.active .ptxt{color:#fff;text-shadow:0 0 8px rgba(255,122,69,.3)}
 .waveform-wrap{margin-top:6px;border-radius:6px;overflow:hidden;background:rgba(55,210,196,.05);border:1px solid rgba(55,210,196,.15)}
 .waveform-cv{display:block;width:100%;height:30px}
-
-/* Row action buttons */
 .prow-btns{display:flex;flex-direction:column;gap:5px;flex:none}
 .rb{flex:none;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--muted);cursor:pointer;display:grid;place-items:center;transition:.14s}
 .rb:hover{border-color:var(--text);color:var(--text)}
@@ -119,14 +102,20 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 .rb.rb-play{color:var(--text)}
 .prow.active .rb.rb-play{border-color:var(--accent);color:var(--accent)}
 .rb.rb-dl{color:var(--accent-2);border-color:rgba(55,210,196,.3)}
+.rb.rb-note{color:var(--warn);border-color:rgba(255,209,102,.2)}
+.rb.rb-note.active{background:rgba(255,209,102,.15);border-color:var(--warn)}
 .rb.rb-split{font-size:14px}
 .empty{color:var(--muted);font-size:13px;text-align:center;padding:14px 0}
 .voice-badge{display:inline-flex;align-items:center;gap:4px;margin-top:5px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(55,210,196,.13);color:var(--accent-2);border:1px solid rgba(55,210,196,.25)}
 .voice-badge.male{background:rgba(255,122,69,.1);color:var(--accent);border-color:rgba(255,122,69,.2)}
+.note-area{width:100%;margin-top:8px;display:none}
+.note-area.open{display:block}
+.note-area textarea{width:100%;min-height:52px;resize:vertical;border-radius:10px;background:#0e1118;border:1px solid var(--line);color:var(--text);padding:8px 10px;font-family:inherit;font-size:13px;line-height:1.5;outline:none;transition:.2s}
+.note-area textarea:focus{border-color:var(--warn)}
+.note-area .note-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;display:block}
 .rotate-preview{margin-top:10px;padding:10px 12px;border-radius:10px;background:#0e1118;border:1px solid var(--line);font-size:12px;color:var(--muted);line-height:1.8;display:none}
 .rotate-preview.show{display:block}
 .rotate-preview span.f{color:var(--accent-2)}.rotate-preview span.m{color:var(--accent)}
-
 details{margin-top:4px}
 details summary{color:var(--muted);font-size:12.5px;cursor:pointer;list-style:none}
 details summary::-webkit-details-marker{display:none}
@@ -134,22 +123,18 @@ details p{font-size:12.5px;color:var(--muted);line-height:1.7;margin:10px 0 0}
 details a{color:var(--accent-2)}details code{background:#0e1118;padding:1px 6px;border-radius:6px;font-size:12px}
 details b{color:var(--text)}
 
-/* ====== Split Modal ====== */
+/* ===== Split Modal ===== */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:center;justify-content:center;padding:18px}
 .modal-overlay.show{display:flex}
 .modal-box{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;width:100%;max-width:500px;box-shadow:var(--shadow);max-height:90dvh;overflow-y:auto}
 .modal-title{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:18px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
 .modal-sub{color:var(--muted);font-size:12.5px;margin-bottom:14px}
-
-/* Word tokens */
 .split-words{display:flex;flex-wrap:wrap;align-items:center;row-gap:6px;padding:14px;background:#0e1118;border-radius:12px;border:1px solid var(--line);margin-bottom:12px;min-height:52px}
 .sw{display:inline-block;padding:4px 8px;border-radius:7px;background:var(--panel-2);font-size:14px;border:1px solid var(--line);cursor:default;white-space:nowrap;transition:.12s}
 .ssep{display:inline-flex;align-items:center;justify-content:center;width:22px;height:32px;cursor:pointer;flex:none;position:relative}
 .ssep-line{width:2px;height:20px;border-radius:2px;background:var(--line);transition:.15s;pointer-events:none}
 .ssep:hover .ssep-line{background:rgba(255,122,69,.6);height:26px}
 .ssep.chosen .ssep-line{background:var(--accent);height:28px;box-shadow:0 0 10px rgba(255,122,69,.5)}
-
-/* Split preview */
 .split-preview{border-radius:10px;background:#0e1118;border:1px solid var(--line);padding:12px 14px;font-size:13px;margin-bottom:12px;display:none}
 .split-preview.show{display:block}
 .sp-row{display:flex;gap:8px;align-items:baseline;margin-bottom:4px}
@@ -158,7 +143,6 @@ details b{color:var(--text)}
 .sp-tag.t1{background:rgba(55,210,196,.15);color:var(--accent-2)}
 .sp-tag.t2{background:rgba(255,122,69,.15);color:var(--accent)}
 .sp-text{color:var(--text);font-size:13.5px;line-height:1.4}
-
 .modal-hint{font-size:11.5px;color:var(--muted);margin-bottom:14px}
 .modal-btns{display:flex;gap:10px}
 .modal-ok{flex:1;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),#ff9b6e);color:#0c0e13;font-weight:700;font-family:"Bricolage Grotesque",sans-serif;font-size:15px;padding:12px;cursor:pointer;transition:.14s}
@@ -173,18 +157,18 @@ details b{color:var(--text)}
   <header>
     <div class="brandrow">
       <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#0c0e13" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M16 8a5 5 0 0 1 0 8"/><path d="M19 5a9 9 0 0 1 0 14"/></svg></div>
-      <div><h1>TTS Loop</h1><div class="sub">Luyện nghe — lặp từng câu</div></div>
+      <div><h1>TTS Loop</h1><div class="sub">Listening &amp; Reading Practice</div></div>
     </div>
-    <div class="mode" id="modeBadge"><span class="d"></span><span id="modeText">Giọng thiết bị</span></div>
+    <div class="mode" id="modeBadge"><span class="d"></span><span id="modeText">Device voice</span></div>
   </header>
 
   <div class="card">
-    <label class="label" for="text">Danh sách câu luyện tập (mỗi câu một dòng)</label>
+    <label class="label" for="text">Sentences (one per line)</label>
     <textarea id="text" placeholder="1. The financial analyst will analyse the quarterly market trends.
 2. We need to analyse the feedback before the new update.
 3. The team was asked to analyse the survey data.
 ..."></textarea>
-    <div class="mt"><span class="label">Ngôn ngữ</span>
+    <div class="mt"><span class="label">Language</span>
       <div class="lang-tabs" id="langTabs">
         <div class="ltab active" data-lang="en">🇬🇧 EN</div>
         <div class="ltab" data-lang="vi">🇻🇳 VI</div>
@@ -196,86 +180,86 @@ details b{color:var(--text)}
         <div class="ltab" data-lang="de">🇩🇪 DE</div>
       </div>
     </div>
-    <div class="mt"><label class="label" for="voice">Giọng đọc</label><select id="voice"></select></div>
+    <div class="mt"><label class="label" for="voice">Voice</label><select id="voice"></select></div>
     <label class="toggle mt" id="rotateToggleRow" style="display:none">
       <input type="checkbox" id="voiceRotate">
       <span class="knob"></span>
-      <span>🔄 Nữ↔Nam luân phiên theo câu</span>
+      <span>🔄 Female↔Male alternating per sentence</span>
     </label>
     <div class="rotate-preview" id="rotatePreview"></div>
     <button class="btn mt" id="loadBtn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-      <span>Nạp danh sách</span>
+      <span>Load list</span>
     </button>
   </div>
 
   <div class="card">
-    <div class="sliderhead"><span class="label" style="margin:0">Âm lượng</span><span class="sliderval" id="volVal">100%</span></div>
+    <div class="sliderhead"><span class="label" style="margin:0">Volume</span><span class="sliderval" id="volVal">100%</span></div>
     <input type="range" id="vol" min="10" max="500" step="5" value="100">
-    <div class="hint" id="volHint">Trên 100% chỉ hoạt động ở chế độ Microsoft Neural.</div>
+    <div class="hint" id="volHint">Above 100% works only with Microsoft Neural.</div>
     <div class="row mt">
-      <div><div class="sliderhead"><span class="label" style="margin:0">Tốc độ</span><span class="sliderval" id="rateVal">0%</span></div><input type="range" id="rate" min="-50" max="100" step="5" value="0"></div>
-      <div><div class="sliderhead"><span class="label" style="margin:0">Cao độ</span><span class="sliderval" id="pitchVal">0</span></div><input type="range" id="pitch" min="-50" max="50" step="5" value="0"></div>
+      <div><div class="sliderhead"><span class="label" style="margin:0">Speed</span><span class="sliderval" id="rateVal">0%</span></div><input type="range" id="rate" min="-50" max="100" step="5" value="0"></div>
+      <div><div class="sliderhead"><span class="label" style="margin:0">Pitch</span><span class="sliderval" id="pitchVal">0</span></div><input type="range" id="pitch" min="-50" max="50" step="5" value="0"></div>
     </div>
-    <div class="row mt"><div><div class="sliderhead"><span class="label" style="margin:0">Nghỉ giữa các lần</span><span class="sliderval" id="gapVal">0.0s</span></div><input type="range" id="gap" min="0" max="5" step="0.5" value="0"></div></div>
-    <label class="toggle mt" style="margin-top:16px"><input type="checkbox" id="limiter" checked><span class="knob"></span><span>Chống vỡ tiếng khi tăng âm lượng lớn</span></label>
+    <div class="row mt"><div><div class="sliderhead"><span class="label" style="margin:0">Pause between repeats</span><span class="sliderval" id="gapVal">0.0s</span></div><input type="range" id="gap" min="0" max="5" step="0.5" value="0"></div></div>
+    <label class="toggle mt" style="margin-top:16px"><input type="checkbox" id="limiter" checked><span class="knob"></span><span>Anti-clipping (dynamic compressor)</span></label>
   </div>
 
   <div class="card">
-    <label class="label" for="worker">Máy chủ Microsoft Neural (tùy chọn — dán link Worker)</label>
-    <input type="text" id="worker" placeholder="https://ten-cua-ban.workers.dev" autocomplete="off" autocapitalize="off" spellcheck="false">
-    <div class="hint">Để trống = dùng giọng thiết bị. Dán link Worker để mở khoá Microsoft Neural + tải MP3 + tăng âm lượng &gt;100%.</div>
+    <label class="label" for="worker">Microsoft Neural Worker (optional — paste Worker URL)</label>
+    <input type="text" id="worker" placeholder="https://your-worker-name.workers.dev" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="hint">Leave empty = device voices. Paste Worker URL to unlock Microsoft Neural + MP3 download + volume &gt;100%.</div>
   </div>
 
   <div class="card">
-    <div class="listhead"><h3>Luyện từng dòng</h3></div>
+    <div class="listhead"><h3>Practice lines</h3></div>
 
     <!-- Toolbar -->
     <div class="toolbar-grid">
-      <button class="tbtn primary" id="pregenBtn">⚡ Tạo sẵn</button>
-      <button class="tbtn t-dlall" id="dlAllBtn">⬇ Tải tất cả MP3</button>
-      <button class="tbtn t-sel" id="selAllBtn">☑ Chọn tất cả</button>
-      <button class="tbtn t-sel" id="deselAllBtn">□ Bỏ chọn</button>
-      <button class="tbtn t-merge" id="mergeBtn" disabled>⊕ Gộp</button>
-      <button class="tbtn t-danger" id="clearBtn">✕ Xóa</button>
+      <button class="tbtn primary" id="pregenBtn">⚡ Pre‑generate</button>
+      <button class="tbtn t-dlall" id="dlAllBtn">⬇ Download all MP3</button>
+      <button class="tbtn t-sel" id="selAllBtn">☑ Select all</button>
+      <button class="tbtn t-sel" id="deselAllBtn">□ Deselect</button>
+      <button class="tbtn t-merge" id="mergeBtn" disabled>⊕ Merge</button>
+      <button class="tbtn t-danger" id="clearBtn">✕ Clear</button>
     </div>
 
     <!-- Download progress -->
     <div class="dl-progress" id="dlProgress"><div class="dl-bar" id="dlBar"></div></div>
 
     <div class="nowloop" id="nowloop"></div>
-    <div class="status" id="status">Dán câu vào ô trên rồi bấm "Nạp danh sách".</div>
-    <div id="list"><div class="empty">Chưa có câu nào.</div></div>
+    <div class="status" id="status">Paste sentences above and click "Load list".</div>
+    <div id="list"><div class="empty">No sentences yet.</div></div>
   </div>
 
   <details>
-    <summary>ⓘ Cách dùng &amp; mở khoá giọng Microsoft</summary>
-    <p><b>Luyện tập:</b> bấm ▶ ở câu nào để lặp vô hạn. Bấm câu khác để chuyển. Bấm lại để tắt.</p>
-    <p><b>Chọn &amp; Gộp:</b> tick vào ô vuông trái mỗi câu để chọn. Khi chọn ≥2 câu, nút "Gộp" sẽ sáng — bấm để nối chúng thành một câu.</p>
-    <p><b>Tách câu:</b> bấm ✂ ở mỗi câu để mở hộp thoại tách. Click vào khoảng giữa các từ để chọn điểm tách. Hoặc dùng "Tự động tách" theo dấu câu.</p>
-    <p><b>Sóng âm:</b> khi câu đã được tổng hợp (Microsoft Neural), sóng âm sẽ hiện bên dưới nội dung câu.</p>
-    <p><b>Tải tất cả MP3:</b> bấm "⬇ Tải tất cả MP3" để tổng hợp và gộp toàn bộ câu thành 1 file MP3 duy nhất.</p>
-    <p><b>Hai chế độ:</b><br>
-      • <b>Giọng thiết bị</b> (mặc định): dùng giọng có sẵn. Chạy ngay, không tải MP3.<br>
-      • <b>Microsoft Neural</b>: chất lượng cao, tải MP3, âm lượng &gt;100%. Cần Cloudflare Worker.</p>
-    <p><b>Tạo Worker:</b> vào <a href="https://dash.cloudflare.com" target="_blank">dash.cloudflare.com</a> → Workers → Create → Deploy → Edit code → dán file <code>worker.js</code> → Deploy → copy link dán vào ô trên.</p>
+    <summary>ⓘ How to use &amp; unlock Microsoft voices</summary>
+    <p><b>Practice:</b> press ▶ on any sentence to loop infinitely. Press another sentence to switch. Press again to stop.</p>
+    <p><b>Select &amp; Merge:</b> tick the checkbox on the left of each sentence to select. When ≥2 selected, "Merge" lights up — click to join them into one.</p>
+    <p><b>Split:</b> click ✂ on a sentence to open the split dialog. Click between words to choose split point, or use "Auto split" by punctuation.</p>
+    <p><b>Waveform:</b> when a sentence is synthesised (Microsoft Neural), a waveform appears below the text.</p>
+    <p><b>Download all MP3:</b> click "⬇ Download all MP3" to synthesise and merge all sentences into a single MP3 file.</p>
+    <p><b>Two modes:</b><br>
+      • <b>Device voice</b> (default): uses built‑in voices. Instant, no MP3 download.<br>
+      • <b>Microsoft Neural</b>: high quality, MP3 download, volume &gt;100%. Requires Cloudflare Worker.</p>
+    <p><b>Create Worker:</b> go to <a href="https://dash.cloudflare.com" target="_blank">dash.cloudflare.com</a> → Workers → Create → Deploy → Edit code → paste <code>worker.js</code> → Deploy → copy URL and paste above.</p>
   </details>
 </div>
 
 <!-- Split Modal -->
 <div class="modal-overlay" id="splitModal">
   <div class="modal-box">
-    <div class="modal-title">✂ Tách câu</div>
-    <div class="modal-sub">Bấm vào khoảng giữa các từ để chọn điểm tách</div>
+    <div class="modal-title">✂ Split sentence</div>
+    <div class="modal-sub">Click between words to choose split point</div>
     <div class="split-words" id="splitWords"></div>
     <div class="split-preview" id="splitPreview">
-      <div class="sp-row"><span class="sp-tag t1">Câu 1</span><span class="sp-text" id="sp1"></span></div>
-      <div class="sp-row"><span class="sp-tag t2">Câu 2</span><span class="sp-text" id="sp2"></span></div>
+      <div class="sp-row"><span class="sp-tag t1">Part 1</span><span class="sp-text" id="sp1"></span></div>
+      <div class="sp-row"><span class="sp-tag t2">Part 2</span><span class="sp-text" id="sp2"></span></div>
     </div>
-    <button class="modal-auto" id="splitAutoBtn">⚡ Tự động tách theo dấu câu (, . ; : !)</button>
+    <button class="modal-auto" id="splitAutoBtn">⚡ Auto split by punctuation (, . ; : !)</button>
     <div class="modal-btns">
-      <button class="modal-cancel" id="splitCancel">Hủy</button>
-      <button class="modal-ok" id="splitConfirm" disabled>Tách thành 2 câu</button>
+      <button class="modal-cancel" id="splitCancel">Cancel</button>
+      <button class="modal-ok" id="splitConfirm" disabled>Split into 2</button>
     </div>
   </div>
 </div>
@@ -287,96 +271,96 @@ details b{color:var(--text)}
   /* ===== Voices ===== */
   const MS_VOICES = {
     en:[
-      {id:"en-US-AriaNeural",     label:"Aria · Nữ (Mỹ)"},
-      {id:"en-US-JennyNeural",    label:"Jenny · Nữ (Mỹ)"},
-      {id:"en-US-AmberNeural",    label:"Amber · Nữ (Mỹ)"},
-      {id:"en-US-MonicaNeural",   label:"Monica · Nữ (Mỹ)"},
-      {id:"en-US-SaraNeural",     label:"Sara · Nữ (Mỹ)"},
-      {id:"en-US-NancyNeural",    label:"Nancy · Nữ (Mỹ)"},
-      {id:"en-US-GuyNeural",      label:"Guy · Nam (Mỹ)"},
-      {id:"en-US-DavisNeural",    label:"Davis · Nam (Mỹ)"},
-      {id:"en-US-ChristopherNeural",label:"Christopher · Nam (Mỹ)"},
-      {id:"en-US-EricNeural",     label:"Eric · Nam (Mỹ)"},
-      {id:"en-US-TonyNeural",     label:"Tony · Nam (Mỹ)"},
-      {id:"en-US-AnaNeural",      label:"Ana · Trẻ em (Mỹ)"},
-      {id:"en-GB-SoniaNeural",    label:"Sonia · Nữ (Anh)"},
-      {id:"en-GB-LibbyNeural",    label:"Libby · Nữ (Anh)"},
-      {id:"en-GB-MaisieNeural",   label:"Maisie · Nữ (Anh)"},
-      {id:"en-GB-RyanNeural",     label:"Ryan · Nam (Anh)"},
-      {id:"en-GB-ThomasNeural",   label:"Thomas · Nam (Anh)"},
-      {id:"en-AU-NatashaNeural",  label:"Natasha · Nữ (Úc)"},
-      {id:"en-AU-AnnetteNeural",  label:"Annette · Nữ (Úc)"},
-      {id:"en-AU-WilliamNeural",  label:"William · Nam (Úc)"},
-      {id:"en-CA-ClaraNeural",    label:"Clara · Nữ (Canada)"},
-      {id:"en-CA-LiamNeural",     label:"Liam · Nam (Canada)"},
-      {id:"en-IN-NeerjaNeural",   label:"Neerja · Nữ (Ấn Độ)"},
-      {id:"en-IN-PrabhatNeural",  label:"Prabhat · Nam (Ấn Độ)"},
-      {id:"en-IE-EmilyNeural",    label:"Emily · Nữ (Ireland)"},
-      {id:"en-NZ-MollyNeural",    label:"Molly · Nữ (New Zealand)"},
+      {id:"en-US-AriaNeural",     label:"Aria · Female (US)"},
+      {id:"en-US-JennyNeural",    label:"Jenny · Female (US)"},
+      {id:"en-US-AmberNeural",    label:"Amber · Female (US)"},
+      {id:"en-US-MonicaNeural",   label:"Monica · Female (US)"},
+      {id:"en-US-SaraNeural",     label:"Sara · Female (US)"},
+      {id:"en-US-NancyNeural",    label:"Nancy · Female (US)"},
+      {id:"en-US-GuyNeural",      label:"Guy · Male (US)"},
+      {id:"en-US-DavisNeural",    label:"Davis · Male (US)"},
+      {id:"en-US-ChristopherNeural",label:"Christopher · Male (US)"},
+      {id:"en-US-EricNeural",     label:"Eric · Male (US)"},
+      {id:"en-US-TonyNeural",     label:"Tony · Male (US)"},
+      {id:"en-US-AnaNeural",      label:"Ana · Child (US)"},
+      {id:"en-GB-SoniaNeural",    label:"Sonia · Female (UK)"},
+      {id:"en-GB-LibbyNeural",    label:"Libby · Female (UK)"},
+      {id:"en-GB-MaisieNeural",   label:"Maisie · Female (UK)"},
+      {id:"en-GB-RyanNeural",     label:"Ryan · Male (UK)"},
+      {id:"en-GB-ThomasNeural",   label:"Thomas · Male (UK)"},
+      {id:"en-AU-NatashaNeural",  label:"Natasha · Female (AU)"},
+      {id:"en-AU-AnnetteNeural",  label:"Annette · Female (AU)"},
+      {id:"en-AU-WilliamNeural",  label:"William · Male (AU)"},
+      {id:"en-CA-ClaraNeural",    label:"Clara · Female (CA)"},
+      {id:"en-CA-LiamNeural",     label:"Liam · Male (CA)"},
+      {id:"en-IN-NeerjaNeural",   label:"Neerja · Female (IN)"},
+      {id:"en-IN-PrabhatNeural",  label:"Prabhat · Male (IN)"},
+      {id:"en-IE-EmilyNeural",    label:"Emily · Female (IE)"},
+      {id:"en-NZ-MollyNeural",    label:"Molly · Female (NZ)"},
     ],
     vi:[
-      {id:"vi-VN-HoaiMyNeural",   label:"Hoài My · Nữ"},
-      {id:"vi-VN-NamMinhNeural",  label:"Nam Minh · Nam"},
+      {id:"vi-VN-HoaiMyNeural",   label:"Hoài My · Female"},
+      {id:"vi-VN-NamMinhNeural",  label:"Nam Minh · Male"},
     ],
     ja:[
-      {id:"ja-JP-NanamiNeural",   label:"Nanami · Nữ"},
-      {id:"ja-JP-MayuNeural",     label:"Mayu · Nữ"},
-      {id:"ja-JP-ShioriNeural",   label:"Shiori · Nữ"},
-      {id:"ja-JP-AoiNeural",      label:"Aoi · Nữ"},
-      {id:"ja-JP-KeitaNeural",    label:"Keita · Nam"},
-      {id:"ja-JP-DaichiNeural",   label:"Daichi · Nam"},
-      {id:"ja-JP-NaokiNeural",    label:"Naoki · Nam"},
+      {id:"ja-JP-NanamiNeural",   label:"Nanami · Female"},
+      {id:"ja-JP-MayuNeural",     label:"Mayu · Female"},
+      {id:"ja-JP-ShioriNeural",   label:"Shiori · Female"},
+      {id:"ja-JP-AoiNeural",      label:"Aoi · Female"},
+      {id:"ja-JP-KeitaNeural",    label:"Keita · Male"},
+      {id:"ja-JP-DaichiNeural",   label:"Daichi · Male"},
+      {id:"ja-JP-NaokiNeural",    label:"Naoki · Male"},
     ],
     ko:[
-      {id:"ko-KR-SunHiNeural",    label:"SunHi · Nữ"},
-      {id:"ko-KR-YuJinNeural",    label:"YuJin · Nữ"},
-      {id:"ko-KR-HyunsuNeural",   label:"Hyunsu · Nữ"},
-      {id:"ko-KR-InJoonNeural",   label:"InJoon · Nam"},
-      {id:"ko-KR-BongJinNeural",  label:"BongJin · Nam"},
+      {id:"ko-KR-SunHiNeural",    label:"SunHi · Female"},
+      {id:"ko-KR-YuJinNeural",    label:"YuJin · Female"},
+      {id:"ko-KR-HyunsuNeural",   label:"Hyunsu · Female"},
+      {id:"ko-KR-InJoonNeural",   label:"InJoon · Male"},
+      {id:"ko-KR-BongJinNeural",  label:"BongJin · Male"},
     ],
     zh:[
-      {id:"zh-CN-XiaoxiaoNeural", label:"Xiaoxiao · Nữ (Phổ thông)"},
-      {id:"zh-CN-XiaohanNeural",  label:"Xiaohan · Nữ (Phổ thông)"},
-      {id:"zh-CN-XiaomengNeural", label:"Xiaomeng · Nữ (Phổ thông)"},
-      {id:"zh-CN-XiaoyiNeural",   label:"Xiaoyi · Nữ (Phổ thông)"},
-      {id:"zh-CN-YunxiNeural",    label:"Yunxi · Nam (Phổ thông)"},
-      {id:"zh-CN-YunjianNeural",  label:"Yunjian · Nam (Phổ thông)"},
-      {id:"zh-CN-YunhaoNeural",   label:"Yunhao · Nam (Phổ thông)"},
-      {id:"zh-TW-HsiaoChenNeural",label:"HsiaoChen · Nữ (Đài Loan)"},
-      {id:"zh-TW-YunJheNeural",   label:"YunJhe · Nam (Đài Loan)"},
-      {id:"zh-HK-HiuGaaiNeural",  label:"HiuGaai · Nữ (Quảng Đông)"},
-      {id:"zh-HK-WanLungNeural",  label:"WanLung · Nam (Quảng Đông)"},
+      {id:"zh-CN-XiaoxiaoNeural", label:"Xiaoxiao · Female (Mandarin)"},
+      {id:"zh-CN-XiaohanNeural",  label:"Xiaohan · Female (Mandarin)"},
+      {id:"zh-CN-XiaomengNeural", label:"Xiaomeng · Female (Mandarin)"},
+      {id:"zh-CN-XiaoyiNeural",   label:"Xiaoyi · Female (Mandarin)"},
+      {id:"zh-CN-YunxiNeural",    label:"Yunxi · Male (Mandarin)"},
+      {id:"zh-CN-YunjianNeural",  label:"Yunjian · Male (Mandarin)"},
+      {id:"zh-CN-YunhaoNeural",   label:"Yunhao · Male (Mandarin)"},
+      {id:"zh-TW-HsiaoChenNeural",label:"HsiaoChen · Female (Taiwan)"},
+      {id:"zh-TW-YunJheNeural",   label:"YunJhe · Male (Taiwan)"},
+      {id:"zh-HK-HiuGaaiNeural",  label:"HiuGaai · Female (Cantonese)"},
+      {id:"zh-HK-WanLungNeural",  label:"WanLung · Male (Cantonese)"},
     ],
     fr:[
-      {id:"fr-FR-DeniseNeural",   label:"Denise · Nữ (Pháp)"},
-      {id:"fr-FR-EloiseNeural",   label:"Eloise · Nữ trẻ (Pháp)"},
-      {id:"fr-FR-BrigitteNeural", label:"Brigitte · Nữ (Pháp)"},
-      {id:"fr-FR-HenriNeural",    label:"Henri · Nam (Pháp)"},
-      {id:"fr-FR-JeromeNeural",   label:"Jerome · Nam (Pháp)"},
-      {id:"fr-CA-SylvieNeural",   label:"Sylvie · Nữ (Canada)"},
-      {id:"fr-CA-ThierryNeural",  label:"Thierry · Nam (Canada)"},
-      {id:"fr-BE-CharlineNeural", label:"Charline · Nữ (Bỉ)"},
-      {id:"fr-CH-ArianeNeural",   label:"Ariane · Nữ (Thụy Sĩ)"},
+      {id:"fr-FR-DeniseNeural",   label:"Denise · Female (FR)"},
+      {id:"fr-FR-EloiseNeural",   label:"Eloise · Female young (FR)"},
+      {id:"fr-FR-BrigitteNeural", label:"Brigitte · Female (FR)"},
+      {id:"fr-FR-HenriNeural",    label:"Henri · Male (FR)"},
+      {id:"fr-FR-JeromeNeural",   label:"Jerome · Male (FR)"},
+      {id:"fr-CA-SylvieNeural",   label:"Sylvie · Female (CA)"},
+      {id:"fr-CA-ThierryNeural",  label:"Thierry · Male (CA)"},
+      {id:"fr-BE-CharlineNeural", label:"Charline · Female (BE)"},
+      {id:"fr-CH-ArianeNeural",   label:"Ariane · Female (CH)"},
     ],
     es:[
-      {id:"es-ES-ElviraNeural",   label:"Elvira · Nữ (Tây Ban Nha)"},
-      {id:"es-ES-AbrilNeural",    label:"Abril · Nữ (Tây Ban Nha)"},
-      {id:"es-ES-AlvaroNeural",   label:"Alvaro · Nam (Tây Ban Nha)"},
-      {id:"es-MX-DaliaNeural",    label:"Dalia · Nữ (Mexico)"},
-      {id:"es-MX-MarinaNeural",   label:"Marina · Nữ (Mexico)"},
-      {id:"es-MX-JorgeNeural",    label:"Jorge · Nam (Mexico)"},
-      {id:"es-AR-ElenaNeural",    label:"Elena · Nữ (Argentina)"},
-      {id:"es-US-PalomaNeural",   label:"Paloma · Nữ (Mỹ)"},
+      {id:"es-ES-ElviraNeural",   label:"Elvira · Female (ES)"},
+      {id:"es-ES-AbrilNeural",    label:"Abril · Female (ES)"},
+      {id:"es-ES-AlvaroNeural",   label:"Alvaro · Male (ES)"},
+      {id:"es-MX-DaliaNeural",    label:"Dalia · Female (MX)"},
+      {id:"es-MX-MarinaNeural",   label:"Marina · Female (MX)"},
+      {id:"es-MX-JorgeNeural",    label:"Jorge · Male (MX)"},
+      {id:"es-AR-ElenaNeural",    label:"Elena · Female (AR)"},
+      {id:"es-US-PalomaNeural",   label:"Paloma · Female (US)"},
     ],
     de:[
-      {id:"de-DE-KatjaNeural",    label:"Katja · Nữ (Đức)"},
-      {id:"de-DE-KlarissaNeural", label:"Klarissa · Nữ (Đức)"},
-      {id:"de-DE-LouisaNeural",   label:"Louisa · Nữ (Đức)"},
-      {id:"de-DE-ConradNeural",   label:"Conrad · Nam (Đức)"},
-      {id:"de-DE-KasperNeural",   label:"Kasper · Nam (Đức)"},
-      {id:"de-AT-IngridNeural",   label:"Ingrid · Nữ (Áo)"},
-      {id:"de-AT-JonasNeural",    label:"Jonas · Nam (Áo)"},
-      {id:"de-CH-LeniNeural",     label:"Leni · Nữ (Thụy Sĩ)"},
+      {id:"de-DE-KatjaNeural",    label:"Katja · Female (DE)"},
+      {id:"de-DE-KlarissaNeural", label:"Klarissa · Female (DE)"},
+      {id:"de-DE-LouisaNeural",   label:"Louisa · Female (DE)"},
+      {id:"de-DE-ConradNeural",   label:"Conrad · Male (DE)"},
+      {id:"de-DE-KasperNeural",   label:"Kasper · Male (DE)"},
+      {id:"de-AT-IngridNeural",   label:"Ingrid · Female (AT)"},
+      {id:"de-AT-JonasNeural",    label:"Jonas · Male (AT)"},
+      {id:"de-CH-LeniNeural",     label:"Leni · Female (CH)"},
     ],
   };
   const LANGTAG={en:"en-US",vi:"vi-VN",ja:"ja-JP",ko:"ko-KR",zh:"zh-CN",fr:"fr-FR",es:"es-ES",de:"de-DE"};
@@ -397,7 +381,8 @@ details b{color:var(--text)}
   let selectedSet=new Set();
   let splitModalIdx=-1,splitPt=-1,splitWords=[];
   let voiceRotate=false;
-  const savedVoice={}; // saved voice per lang+mode: {"en|ms":"en-US-AriaNeural","en|device":"Google US English", ...}
+  const savedVoice = {};
+  const notes = {}; // index -> note text
   const svKey=()=>currentLang+(isEdge()?"|ms":"|device");
 
   /* ===== Worker/mode ===== */
@@ -425,9 +410,9 @@ details b{color:var(--text)}
   async function synthWorker(meta){
     const u=workerUrl()+"?text="+encodeURIComponent(meta.text)+"&voice="+encodeURIComponent(meta.voice)+"&rate="+meta.rate+"&pitch="+meta.pitch;
     const res=await fetch(u);
-    if(!res.ok)throw new Error("Worker lỗi ("+res.status+"). Kiểm tra lại link.");
+    if(!res.ok)throw new Error("Worker error ("+res.status+"). Check the URL.");
     const buf=await res.arrayBuffer();
-    if(!buf||buf.byteLength<200)throw new Error("Không nhận được âm thanh từ Worker.");
+    if(!buf||buf.byteLength<200)throw new Error("No audio received from Worker.");
     return buf;
   }
 
@@ -442,8 +427,8 @@ details b{color:var(--text)}
   /* ===== Voice rotation ===== */
   function getGenderVoices(){
     const voices=MS_VOICES[currentLang]||[];
-    const female=voices.filter(v=>v.label.toLowerCase().includes('nữ'));
-    const male=voices.filter(v=>v.label.toLowerCase().includes('nam'));
+    const female=voices.filter(v=>v.label.toLowerCase().includes('female'));
+    const male=voices.filter(v=>v.label.toLowerCase().includes('male'));
     return{female,male};
   }
   function voiceIdForLine(i){
@@ -452,10 +437,10 @@ details b{color:var(--text)}
     const hasFemale=female.length>0,hasMale=male.length>0;
     if(!hasFemale&&!hasMale)return voiceEl.value;
     const pairIdx=Math.floor(i/2);
-    if(i%2===0){// câu lẻ 1,3,5... → Nữ
+    if(i%2===0){
       if(!hasFemale)return male[pairIdx%male.length].id;
       return female[pairIdx%female.length].id;
-    }else{// câu chẵn 2,4,6... → Nam
+    }else{
       if(!hasMale)return female[pairIdx%female.length].id;
       return male[pairIdx%male.length].id;
     }
@@ -478,20 +463,20 @@ details b{color:var(--text)}
     rotateToggleRow.style.display=isEdge()?'flex':'none';
     if(!isEdge()||!voiceRotate){rotatePreviewEl.classList.remove('show');return;}
     const{female,male}=getGenderVoices();
-    if(!female.length&&!male.length){rotatePreviewEl.innerHTML='<i>Ngôn ngữ này chưa đủ giọng Nữ/Nam để luân phiên.</i>';rotatePreviewEl.classList.add('show');return;}
-    let html='<b>Lịch phân giọng:</b><br>';
+    if(!female.length&&!male.length){rotatePreviewEl.innerHTML='<i>This language doesnʼt have enough female/male voices.</i>';rotatePreviewEl.classList.add('show');return;}
+    let html='<b>Voice rotation:</b><br>';
     for(let i=0;i<Math.min(lines.length||8,8);i++){
       const pairIdx=Math.floor(i/2);
       if(i%2===0){
         const v=female.length?female[pairIdx%female.length]:male[pairIdx%male.length];
-        html+=`<span class="f">Câu ${i+1}: ♀ ${v.label.split('·')[0].trim()}</span>　`;
+        html+=`<span class="f">Line ${i+1}: ♀ ${v.label.split('·')[0].trim()}</span>　`;
       }else{
         const v=male.length?male[pairIdx%male.length]:female[pairIdx%female.length];
-        html+=`<span class="m">Câu ${i+1}: ♂ ${v.label.split('·')[0].trim()}</span>　`;
+        html+=`<span class="m">Line ${i+1}: ♂ ${v.label.split('·')[0].trim()}</span>　`;
       }
       if((i+1)%2===0)html+='<br>';
     }
-    if((lines.length||8)>8)html+='<span>… lặp lại</span>';
+    if((lines.length||8)>8)html+='<span>… repeats</span>';
     rotatePreviewEl.innerHTML=html;rotatePreviewEl.classList.add('show');
   }
   const keyOf=m=>[m.voice,m.rate,m.pitch,m.text].join("\u00a6");
@@ -553,78 +538,78 @@ details b{color:var(--text)}
 
   /* ===== Play ===== */
   async function playLine(i){
-    if(activeIndex===i&&isPlaying){stopCurrent();status("Đã dừng.","",false);return;}
+    if(activeIndex===i&&isPlaying){stopCurrent();status("Stopped.","",false);return;}
     if(busy)return;
     if(isEdge()){
       busy=true;const voiceId=voiceIdForLine(i);const meta=metaFor(lines[i],voiceId);
       try{ensureAudio();await audioCtx.resume();
-        if(!isCached(meta))status("Câu "+(i+1)+" — đang tạo MP3…","",true);
+        if(!isCached(meta))status("Line "+(i+1)+" — generating MP3…","",true);
         const clip=await ensureClip(meta);
         stopAll();activeIndex=i;render();startLoop(clip.buffer);
-      }catch(e){stopAll();activeIndex=-1;render();status(e.message||"Có lỗi.","err",false);}
+      }catch(e){stopAll();activeIndex=-1;render();status(e.message||"Error.","err",false);}
       finally{busy=false;}
     }else{
-      if(!window.speechSynthesis){status("Thiết bị không hỗ trợ. Hãy dùng chế độ Microsoft.","err",false);return;}
+      if(!window.speechSynthesis){status("Device doesn't support speech synthesis. Use Microsoft mode.","err",false);return;}
       stopAll();activeIndex=i;render();
-      if(!selectedSpeechVoice()&&!voicesForLang().length)status("Chưa có giọng cho ngôn ngữ này — thử đọc mặc định.","",false);
+      if(!selectedSpeechVoice()&&!voicesForLang().length)status("No voice for this language — using default.","",false);
       speakLoop(i);
     }
   }
 
   /* ===== Download single ===== */
   async function downloadLine(i){
-    if(!isEdge()){status("Tải MP3 chỉ có ở chế độ Microsoft Neural.","err",false);return;}
+    if(!isEdge()){status("MP3 download only available with Microsoft Neural.","err",false);return;}
     if(busy)return;busy=true;
-    try{ensureAudio();await audioCtx.resume();status("Đang chuẩn bị MP3…","",true);
+    try{ensureAudio();await audioCtx.resume();status("Preparing MP3…","",true);
       const voiceId=voiceIdForLine(i);const meta=metaFor(lines[i],voiceId);const clip=await ensureClip(meta);
       const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([clip.mp3],{type:"audio/mpeg"}));
       a.download=safeName(meta.text)+".mp3";document.body.appendChild(a);a.click();a.remove();
       setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-      status("Đã tải MP3 câu "+(i+1)+".","ok",false);render();
-    }catch(e){status(e.message||"Tải thất bại.","err",false);}
+      status("Downloaded MP3 line "+(i+1)+".","ok",false);render();
+    }catch(e){status(e.message||"Download failed.","err",false);}
     finally{busy=false;}
   }
 
   /* ===== Download ALL as one MP3 ===== */
   async function downloadAll(){
-    if(!isEdge()){status("Tải tất cả MP3 chỉ có ở chế độ Microsoft Neural (dán link Worker).","err",false);return;}
-    if(!lines.length){status("Chưa có câu nào.","err",false);return;}
+    if(!isEdge()){status("Download all MP3 only available with Microsoft Neural (paste Worker URL).","err",false);return;}
+    if(!lines.length){status("No sentences.","err",false);return;}
     if(busy)return;
     busy=true;dlProgress.style.display="block";dlBar.style.width="0";
     try{
       ensureAudio();await audioCtx.resume();
       const parts=[];
       for(let i=0;i<lines.length;i++){
-        status("Đang tạo "+(i+1)+"/"+lines.length+"…","",true);
+        status("Generating "+(i+1)+"/"+lines.length+"…","",true);
         dlBar.style.width=((i/lines.length)*80)+"%";
         const clip=await ensureClip(metaFor(lines[i],voiceIdForLine(i)));
         parts.push(clip.mp3);render();
         await new Promise(r=>setTimeout(r,60));
       }
-      status("Đang gộp file…","",true);dlBar.style.width="90%";
+      status("Merging files…","",true);dlBar.style.width="90%";
       let totalBytes=0;for(const p of parts)totalBytes+=p.byteLength;
       const combined=new Uint8Array(totalBytes);
       let off=0;for(const p of parts){combined.set(new Uint8Array(p),off);off+=p.byteLength;}
       dlBar.style.width="100%";
       const blob=new Blob([combined],{type:"audio/mpeg"});
       const a=document.createElement("a");a.href=URL.createObjectURL(blob);
-      a.download="ttsloop-all-"+lines.length+"cau.mp3";
+      a.download="ttsloop-all-"+lines.length+"sentences.mp3";
       document.body.appendChild(a);a.click();a.remove();
       setTimeout(()=>URL.revokeObjectURL(a.href),3000);
-      status("Đã tải "+lines.length+" câu → 1 file MP3.","ok",false);
-    }catch(e){status(e.message||"Tải thất bại.","err",false);}
+      status("Downloaded "+lines.length+" sentences → 1 MP3.","ok",false);
+    }catch(e){status(e.message||"Download failed.","err",false);}
     finally{busy=false;setTimeout(()=>{dlProgress.style.display="none";dlBar.style.width="0";},600);}
   }
 
   /* ===== Pregen ===== */
   async function pregenAll(){
-    if(!isEdge()){status("Tạo sẵn chỉ dùng ở chế độ Microsoft Neural.","",false);return;}
+    if(!isEdge()){status("Pre‑generate only works with Microsoft Neural.","",false);return;}
     if(busy||!lines.length)return;busy=true;$("#pregenBtn").disabled=true;
     try{ensureAudio();await audioCtx.resume();let made=0;
       for(let i=0;i<lines.length;i++){const meta=metaFor(lines[i],voiceIdForLine(i));
-        if(!isCached(meta)){status("Đang tạo "+(i+1)+"/"+lines.length+"…","",true);await ensureClip(meta);made++;render();await new Promise(r=>setTimeout(r,150));}}
-      status(made?("Đã tạo sẵn "+made+" câu."):"Tất cả đã có trong cache.","ok",false);
-    }catch(e){status(e.message||"Tạo trước thất bại.","err",false);}
+        if(!isCached(meta)){status("Generating "+(i+1)+"/"+lines.length+"…","",true);await ensureClip(meta);made++;render();await new Promise(r=>setTimeout(r,150));}}
+      status(made?("Pre‑generated "+made+" sentences."):"All already cached.","ok",false);
+    }catch(e){status(e.message||"Pre‑generate failed.","err",false);}
     finally{busy=false;$("#pregenBtn").disabled=false;}
   }
 
@@ -632,7 +617,7 @@ details b{color:var(--text)}
   function updateMergeBtn(){
     const n=selectedSet.size;
     mergeBtn.disabled=n<2;
-    mergeBtn.textContent=n>=2?"⊕ Gộp ("+n+")":"⊕ Gộp";
+    mergeBtn.textContent=n>=2?"⊕ Merge ("+n+")":"⊕ Merge";
   }
 
   /* ===== Merge ===== */
@@ -644,7 +629,57 @@ details b{color:var(--text)}
     lines.splice(sorted[0],0,merged);
     if(activeIndex>=0){stopAll();activeIndex=-1;}
     selectedSet.clear();
-    render();status("Đã gộp "+sorted.length+" câu thành 1.","ok",false);
+    // Remove notes for merged lines, keep note for new merged line? We'll keep the first note.
+    // For simplicity, clear notes for removed indices.
+    const newNotes={};
+    for(let i=0;i<lines.length;i++){
+      if(i===sorted[0]){ // merged line: keep note from first selected?
+        const firstNote = notes[sorted[0]] || '';
+        if(firstNote) newNotes[i] = firstNote;
+      } else {
+        // remap indices: for each original index, if not selected, shift to new index.
+        // easier: rebuild notes from scratch.
+      }
+    }
+    // Rebuild notes: we'll keep notes for all remaining lines, shifting indices.
+    const oldNotes = {...notes};
+    const remainingIndices = lines.map((_,idx)=>idx); // we'll loop
+    // Actually easier: just clear notes and let user re-add.
+    // But we can attempt to preserve notes for unmerged lines.
+    // We'll create a map from new index to old index.
+    let newIdx=0;
+    const newNotesMap = {};
+    for(let oldIdx=0; oldIdx<lines.length + sorted.length; oldIdx++){
+      if(selectedSet.has(oldIdx)) continue;
+      if(oldIdx === sorted[0]) { // merged line: we already handled above
+        continue;
+      }
+      // this oldIdx maps to newIdx
+      // but we need to know where merged line is inserted.
+      // This is messy; for simplicity, we'll just clear notes and let users re-enter.
+      // But we can keep notes for lines that are not selected and not the merged position.
+      // We'll just do a simple reconstruction.
+    }
+    // For simplicity, we'll just reset notes object and let user re-enter.
+    // But we can try to preserve notes for lines that are not selected.
+    const newNotes2 = {};
+    let offset = 0;
+    for(let i=0; i<lines.length + sorted.length; i++){
+      if(selectedSet.has(i)){
+        offset++;
+        continue;
+      }
+      const oldIdx = i;
+      const newIdx = i - offset;
+      if(oldIdx !== sorted[0] && notes[oldIdx]) {
+        newNotes2[newIdx] = notes[oldIdx];
+      }
+    }
+    // Clear notes and assign newNotes2
+    for(let key in notes) delete notes[key];
+    for(let key in newNotes2) notes[key] = newNotes2[key];
+    render();status("Merged "+sorted.length+" sentences into 1.","ok",false);
+    saveNotes();
   }
 
   /* ===== Split Modal ===== */
@@ -683,7 +718,6 @@ details b{color:var(--text)}
     if(m){
       const left=m[1].trim(),right=m[3].trim();
       if(left&&right){
-        // find word index where right part starts
         const allWords=text.split(" ").filter(Boolean);
         let rebuilt="",foundIdx=-1;
         for(let i=0;i<allWords.length;i++){
@@ -692,7 +726,6 @@ details b{color:var(--text)}
         }
         if(foundIdx>0&&foundIdx<allWords.length){
           splitWords=allWords;splitPt=foundIdx;
-          // update UI
           splitWordsEl.querySelectorAll(".ssep").forEach(sep=>{
             sep.classList.remove("chosen");
             if(parseInt(sep.dataset.idx)===splitPt)sep.classList.add("chosen");
@@ -701,7 +734,6 @@ details b{color:var(--text)}
         }
       }
     }
-    // fallback: split at middle
     const words=lines[splitModalIdx].split(" ").filter(Boolean);
     splitWords=words;splitPt=Math.ceil(words.length/2);
     splitWordsEl.querySelectorAll(".ssep").forEach(sep=>{
@@ -715,12 +747,33 @@ details b{color:var(--text)}
     const left=splitWords.slice(0,splitPt).join(" ").trim();
     const right=splitWords.slice(splitPt).join(" ").trim();
     if(!left||!right)return;
+    const oldNote = notes[splitModalIdx] || '';
     lines.splice(splitModalIdx,1,left,right);
+    // shift notes
+    const newNotes = {};
+    let idx=0;
+    for(let i=0; i<lines.length; i++){
+      if(i===splitModalIdx){
+        // first part
+        newNotes[i] = oldNote;
+        // second part
+        newNotes[i+1] = '';
+        // skip one
+        i++;
+      } else {
+        // remap: if i > splitModalIdx, we need to shift from old notes
+        const oldIdx = i > splitModalIdx ? i-1 : i;
+        if(notes[oldIdx] !== undefined) newNotes[i] = notes[oldIdx];
+      }
+    }
+    for(let key in notes) delete notes[key];
+    for(let key in newNotes) notes[key] = newNotes[key];
     if(activeIndex===splitModalIdx){stopAll();activeIndex=-1;}
     else if(activeIndex>splitModalIdx)activeIndex++;
     selectedSet.clear();
     closeSplitModal();
-    render();status("Đã tách câu "+(splitModalIdx+1)+" thành 2.","ok",false);
+    render();status("Split sentence "+(splitModalIdx+1)+" into 2.","ok",false);
+    saveNotes();
   }
   function closeSplitModal(){
     splitModal.classList.remove("show");
@@ -738,7 +791,6 @@ details b{color:var(--text)}
     ctx.scale(dpr,dpr);ctx.clearRect(0,0,W,H);
     const data=buffer.getChannelData(0);
     const step=Math.max(1,Math.floor(data.length/W));
-    // gradient fill
     const grad=ctx.createLinearGradient(0,0,W,0);
     grad.addColorStop(0,"#37d2c4");grad.addColorStop(1,"#5fd07a");
     ctx.fillStyle=grad;
@@ -748,6 +800,35 @@ details b{color:var(--text)}
       const h=Math.max(1,maxAmp*(H*0.85));
       ctx.fillRect(x,(H-h)/2,1,h);
     }
+  }
+
+  /* ===== Notes ===== */
+  function saveNotes(){
+    try{localStorage.setItem('ttsloop_notes',JSON.stringify(notes));}catch(e){}
+  }
+  function loadNotes(){
+    try{const data=localStorage.getItem('ttsloop_notes');if(data){const parsed=JSON.parse(data);for(let k in parsed)notes[k]=parsed[k];}}catch(e){}
+  }
+  function toggleNote(i){
+    const row = document.querySelector(`.prow[data-index="${i}"]`);
+    if(!row)return;
+    const area = row.querySelector('.note-area');
+    if(area){
+      area.classList.toggle('open');
+      // update button active state
+      const btn = row.querySelector('.rb-note');
+      if(btn) btn.classList.toggle('active');
+      // focus textarea if opening
+      if(area.classList.contains('open')){
+        const ta = area.querySelector('textarea');
+        if(ta) setTimeout(()=>ta.focus(),100);
+      }
+    }
+  }
+  function updateNote(i, val){
+    if(val.trim()) notes[i] = val.trim();
+    else delete notes[i];
+    saveNotes();
   }
 
   /* ===== Render ===== */
@@ -760,7 +841,7 @@ details b{color:var(--text)}
   function updateModeBadge(){
     const b=$("#modeBadge");
     if(isEdge()){b.className="mode ms";$("#modeText").textContent="Microsoft Neural";}
-    else{b.className="mode device";$("#modeText").textContent="Giọng thiết bị";}
+    else{b.className="mode device";$("#modeText").textContent="Device voice";}
     updateRotateUI();
   }
   function refreshVoices(){
@@ -770,32 +851,33 @@ details b{color:var(--text)}
       (MS_VOICES[currentLang]||[]).forEach(v=>{const o=document.createElement("option");o.value=v.id;o.textContent=v.label;voiceEl.appendChild(o);});
     }else{
       const vs=voicesForLang();
-      if(!vs.length){const o=document.createElement("option");o.value="";o.textContent="(thiết bị chưa có giọng cho ngôn ngữ này)";voiceEl.appendChild(o);}
+      if(!vs.length){const o=document.createElement("option");o.value="";o.textContent="(no voice for this language)";voiceEl.appendChild(o);}
       vs.forEach(v=>{const o=document.createElement("option");o.value=v.name;o.textContent=v.name+(v.localService?"":" · online");voiceEl.appendChild(o);});
     }
     if(prev&&[...voiceEl.options].some(o=>o.value===prev))voiceEl.value=prev;
-    // Fix 1: sync savedVoice to whatever the select actually landed on
     savedVoice[key]=voiceEl.value;
     updateRotateUI();
   }
   function updateVolHint(){
     const v=parseInt(volEl.value,10);
-    if(!isEdge()&&v>100)volHint.className="hint warn",volHint.textContent="Chế độ giọng thiết bị giới hạn 100%. Dùng Microsoft Neural để tăng to hơn.";
-    else volHint.className="hint",volHint.textContent="Trên 100% chỉ hoạt động ở chế độ Microsoft Neural.";
+    if(!isEdge()&&v>100)volHint.className="hint warn",volHint.textContent="Device voice limited to 100%. Use Microsoft Neural for higher volume.";
+    else volHint.className="hint",volHint.textContent="Above 100% works only with Microsoft Neural.";
   }
 
   function render(){
     updateNowloop();updateMergeBtn();
-    if(!lines.length){listEl.innerHTML='<div class="empty">Chưa có câu nào.</div>';return;}
+    if(!lines.length){listEl.innerHTML='<div class="empty">No sentences yet.</div>';return;}
     const edge=isEdge();listEl.innerHTML="";
     lines.forEach((line,i)=>{
       const active=(i===activeIndex&&isPlaying);
       const voiceId=voiceIdForLine(i);
       const cached=edge&&isCached(metaFor(line,voiceId));
       const sel=selectedSet.has(i);
+      const hasNote = notes[i] && notes[i].trim().length>0;
 
       const row=document.createElement("div");
       row.className="prow"+(active?" active":"")+(cached?" cached":"")+(sel?" selected":"");
+      row.dataset.index=i;
 
       // Checkbox
       const chk=document.createElement("input");
@@ -809,10 +891,9 @@ details b{color:var(--text)}
       // Number badge
       const num=document.createElement("div");num.className="num";num.textContent=i+1;
 
-      // Main area (text + waveform)
+      // Main area (text + waveform + note)
       const main=document.createElement("div");main.className="row-main";
       const ptxt=document.createElement("div");ptxt.className="ptxt";ptxt.textContent=line;
-      // Voice badge when rotation is on
       if(voiceRotate&&edge){
         const vl=voiceLabelForLine(i);
         if(vl){const badge=document.createElement("span");badge.className="voice-badge"+(vl.gender==='m'?" male":"");badge.textContent=(vl.gender==='f'?"♀ ":"♂ ")+vl.label;ptxt.appendChild(document.createElement("br"));ptxt.appendChild(badge);}
@@ -830,11 +911,21 @@ details b{color:var(--text)}
         }
       }
 
+      // Note area
+      const noteDiv=document.createElement("div");noteDiv.className="note-area"+(hasNote?" open":"");
+      const noteLabel=document.createElement("span");noteLabel.className="note-label";noteLabel.textContent="✏️ Personal note";
+      const noteTA=document.createElement("textarea");
+      noteTA.placeholder="Write your note for this sentence…";
+      if(notes[i]) noteTA.value=notes[i];
+      noteTA.oninput=()=>{updateNote(i, noteTA.value);};
+      noteDiv.appendChild(noteLabel);noteDiv.appendChild(noteTA);
+      main.appendChild(noteDiv);
+
       // Button column
       const btns=document.createElement("div");btns.className="prow-btns";
 
       // Play button
-      const goBtn=document.createElement("button");goBtn.className="rb rb-play";goBtn.title="Phát/Dừng";
+      const goBtn=document.createElement("button");goBtn.className="rb rb-play";goBtn.title="Play/Stop";
       goBtn.innerHTML=active
         ?'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>'
         :'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
@@ -842,14 +933,20 @@ details b{color:var(--text)}
       btns.appendChild(goBtn);
 
       // Split button
-      const splitBtn=document.createElement("button");splitBtn.className="rb rb-split";splitBtn.title="Tách câu";
+      const splitBtn=document.createElement("button");splitBtn.className="rb rb-split";splitBtn.title="Split sentence";
       splitBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v6M6 9c0 1.7 1.3 3 3 3h6c1.7 0 3 1.3 3 3v3M6 21v-3M6 18c0-1.7 1.3-3 3-3h6c1.7 0 3-1.3 3-3V9M18 6l-3-3 3-3M18 21l-3-3 3-3"/></svg>';
       splitBtn.onclick=()=>openSplitModal(i);
       btns.appendChild(splitBtn);
 
+      // Note toggle button
+      const noteBtn=document.createElement("button");noteBtn.className="rb rb-note"+(hasNote?" active":"");noteBtn.title="Personal note";
+      noteBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>';
+      noteBtn.onclick=()=>toggleNote(i);
+      btns.appendChild(noteBtn);
+
       // Download single (MS only)
       if(edge){
-        const dl=document.createElement("button");dl.className="rb rb-dl";dl.title="Tải MP3";
+        const dl=document.createElement("button");dl.className="rb rb-dl";dl.title="Download MP3";
         dl.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14"/></svg>';
         dl.onclick=()=>downloadLine(i);
         btns.appendChild(dl);
@@ -864,9 +961,9 @@ details b{color:var(--text)}
     const el=$("#nowloop");
     if(isPlaying&&activeIndex>=0&&lines[activeIndex]!==undefined){
       el.className="nowloop show";
-      el.innerHTML='<span class="spin"></span><div class="lt"><b>🔁 Đang lặp câu '+(activeIndex+1)+' ∞</b><span></span></div><button class="stopb">Dừng</button>';
+      el.innerHTML='<span class="spin"></span><div class="lt"><b>🔁 Repeating line '+(activeIndex+1)+' ∞</b><span></span></div><button class="stopb">Stop</button>';
       el.querySelector(".lt span").textContent=lines[activeIndex];
-      el.querySelector(".stopb").onclick=()=>{stopCurrent();status("Đã dừng.","",false);};
+      el.querySelector(".stopb").onclick=()=>{stopCurrent();status("Stopped.","",false);};
     }else{el.className="nowloop";el.innerHTML="";}
   }
 
@@ -874,10 +971,15 @@ details b{color:var(--text)}
     const raw=textEl.value;
     lines=raw.split(/\r?\n/).map(s=>s.replace(/^\s*\d+\s*[.\)\）:：、．。\-]+\s*/,"").trim()).filter(Boolean);
     stopAll();activeIndex=-1;selectedSet.clear();
+    // clear notes for lines that are no longer present
+    for(let key in notes){
+      if(parseInt(key)>=lines.length) delete notes[key];
+    }
+    saveNotes();
     try{localStorage.setItem("ttsloop_text",raw);}catch(e){}
-    if(!lines.length){status("Không tìm thấy câu nào. Mỗi câu một dòng.","err",false);render();return;}
+    if(!lines.length){status("No sentences found. One per line.","err",false);render();return;}
     updateRotateUI();
-    status("Đã nạp "+lines.length+" câu. Bấm ▶ để luyện.","ok",false);render();
+    status("Loaded "+lines.length+" sentences. Press ▶ to practice.","ok",false);render();
   }
 
   /* ===== Events ===== */
@@ -888,8 +990,7 @@ details b{color:var(--text)}
   });
   voiceEl.onchange=()=>{
     savedVoice[svKey()]=voiceEl.value;
-    // If playing, stop so user hears new voice on next play
-    if(isPlaying){stopAll();activeIndex=-1;render();status("Đã đổi giọng. Bấm ▶ để nghe lại.","",false);}
+    if(isPlaying){stopAll();activeIndex=-1;render();status("Voice changed. Press ▶ to listen again.","",false);}
   };
   voiceRotateEl.onchange=()=>{voiceRotate=voiceRotateEl.checked;updateRotateUI();render();};
   volEl.oninput=()=>{const v=parseInt(volEl.value,10);volVal.textContent=v+"%";volVal.classList.toggle("boost",v>100);applyVolume();updateVolHint();};
@@ -909,8 +1010,9 @@ details b{color:var(--text)}
   $("#mergeBtn").onclick=mergeSelected;
   $("#clearBtn").onclick=async()=>{
     stopAll();activeIndex=-1;lines=[];selectedSet.clear();mem.clear();
+    for(let key in notes) delete notes[key]; saveNotes();
     await idbClear();try{localStorage.removeItem("ttsloop_text");}catch(e){}
-    render();status("Đã xóa danh sách và cache.","",false);
+    render();status("Cleared list and cache.","",false);
   };
   $("#splitCancel").onclick=closeSplitModal;
   $("#splitConfirm").onclick=doSplit;
@@ -921,6 +1023,7 @@ details b{color:var(--text)}
 
   /* ===== Init ===== */
   try{const w=localStorage.getItem("ttsloop_worker");if(w)workerEl.value=w;}catch(e){}
+  loadNotes();
   updateModeBadge();updateVolHint();refreshVoices();
   try{const saved=localStorage.getItem("ttsloop_text");if(saved){textEl.value=saved;loadList();}else render();}catch(e){render();}
 })();
