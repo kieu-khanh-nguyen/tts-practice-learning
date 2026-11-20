@@ -120,6 +120,8 @@ details a{color:var(--accent-2)}details b{color:var(--text)}
   <div class="card">
     <label class="label">Văn bản · sửa trực tiếp · ▶ phát · 🔁 lặp · ⬇ tải MP3</label>
     <div class="toolbar">
+      <button class="tbtn a" id="playAllBtn">▶ Phát tất cả</button>
+      <button class="tbtn a" id="loopAllBtn">🔁 Lặp tất cả</button>
       <button class="tbtn a" id="pregenBtn">⚡ Pre‑generate</button>
       <button class="tbtn b" id="dlAllBtn">⬇ Tải tất cả MP3</button>
       <button class="tbtn" id="stopBtn">■ Dừng</button>
@@ -153,6 +155,7 @@ details a{color:var(--accent-2)}details b{color:var(--text)}
     <p><b>Sửa:</b> gõ trực tiếp trong khung. <b>Enter</b> = tách câu, <b>Backspace</b> đầu dòng = gộp câu.</p>
     <p><b>Tô màu:</b> bôi đen đoạn chữ → chọn màu ở thanh nổi. Nút <b>Nền/Chữ</b> đổi giữa tô nền và đổi màu chữ; <b>+</b> thêm màu riêng; <b>✕</b> xoá định dạng đoạn đã chọn. Màu được lưu lại.</p>
     <p><b>Phát:</b> ▶ phát 1 lần, 🔁 lặp vô hạn, bấm lại để dừng. ⬇ tải MP3 (cần Worker).</p>
+    <p><b>Phát tất cả:</b> ▶ Phát tất cả đọc tuần tự dòng 1 → cuối, giữ đúng giọng từng dòng; 🔁 Lặp tất cả quay lại dòng 1 khi hết. Nghỉ giữa các dòng theo thanh "Nghỉ giữa các lần lặp". Bấm ■ Dừng để ngừng.</p>
     <p><b>Kiểm tra giọng:</b> 🩺 đọc thử một từ bằng từng giọng. ✅ = hoạt động, ❌ = lỗi, không dấu = chưa kiểm tra. Kết quả được lưu; giọng ❌ bị loại khỏi chế độ xen kẽ. Bấm lại nút khi đang chạy để dừng.</p>
     <p><b>Nhiều giọng:</b> bật công tắc (cần Worker). Chọn giọng nữ và giọng nam cụ thể; dòng chẵn đọc bằng giọng nữ, dòng lẻ bằng giọng nam. Tag hỗ trợ nhiều dạng: <code>A (Male): "..."</code>, <code>B (Female): "..."</code>, <code>a: turn 1</code>, <code>b: turn 2</code>. Nếu tag ghi rõ giới tính (Male/Female/nam/nữ) thì dùng đúng giọng đã chọn; nếu không thì xen kẽ theo thứ tự tag. Tag và dấu ngoặc kép không được đọc ra.</p>
     <p><b>Tạo Worker:</b> <a href="https://dash.cloudflare.com" target="_blank">dash.cloudflare.com</a> → Workers → Create → dán <code>worker.js</code> → Deploy → copy URL.</p>
@@ -381,6 +384,7 @@ async function ensureClip(meta){
 function clearMarks(){ed.querySelectorAll("div.active").forEach(d=>d.classList.remove("active","looping"));}
 function stopAll(){
   playing=false;speechOn=false;playingEl=null;
+  stopSeq();                       // dừng chuỗi tuần tự
   if(timer){clearTimeout(timer);timer=null;}
   if(src){try{src.onended=null;src.stop();}catch(e){}try{src.disconnect();}catch(e){}src=null;}
   try{speechSynthesis.cancel();}catch(e){}
@@ -434,6 +438,73 @@ async function play(it,loop){
     if(!window.speechSynthesis){st("Thiết bị không hỗ trợ đọc. Hãy dùng Microsoft Neural.","err");return;}
     speak(it,loop);st(loop?"Đang lặp dòng "+(it.i+1)+" ∞":"Đang phát dòng "+(it.i+1),"ok");
   }
+}
+
+/* ===== play ALL (sequential) ===== */
+let seqTimer=null,seqIdx=0,seqLoop=false,seqRunning=false;
+function stopSeq(){seqRunning=false;seqIdx=0;if(seqTimer){clearTimeout(seqTimer);seqTimer=null;}}
+function playAll(loop){
+  stopAll();stopSeq();
+  const its=items();
+  if(!its.length){st("Chưa có câu nào.","err");return;}
+  seqLoop=!!loop;seqRunning=true;seqIdx=0;
+  st((loop?"Đang lặp tất cả ":"Đang phát tất cả ")+its.length+" dòng…","",true);
+  const step=()=>{
+    if(!seqRunning)return;
+    const list=items();               // lấy lại items mỗi lần để phản ánh sửa đổi
+    if(!list.length){stopSeq();stopAll();st("Không còn dòng nào.","err");return;}
+    if(seqIdx>=list.length){
+      if(seqLoop){seqIdx=0;seqTimer=setTimeout(step,300);return;}
+      stopSeq();stopAll();st("Đã phát xong tất cả.","ok");return;
+    }
+    const it=list[seqIdx];
+    playOneSeq(it,()=>{
+      if(!seqRunning)return;
+      seqIdx++;
+      const gap=parseFloat(gapEl.value)||0;
+      seqTimer=setTimeout(step,gap*1000);
+    });
+  };
+  step();
+}
+async function playOneSeq(it,done){
+  // phát đúng 1 lần cho dòng it, gọi done() khi xong
+  if(playing&&playingEl===it.el){stopAll();}
+  if(busy){seqTimer=setTimeout(()=>playOneSeq(it,done),150);return;}
+  if(isEdge()){
+    busy=true;
+    try{
+      ensureAudio();await audioCtx.resume();
+      const meta=metaFor(it.spoken,it.voice);
+      if(!mem.has(keyOf(meta)))st("Dòng "+(it.i+1)+" — đang tạo giọng "+vLabel(it.voice)+"…","",true);
+      const clip=await ensureClip(meta);
+      clearMarks();playing=true;playingEl=it.el;it.el.classList.add("active");
+      const srcB=audioCtx.createBufferSource();srcB.buffer=clip.buffer;srcB.connect(gain);
+      srcB.onended=()=>{try{srcB.disconnect();}catch(e){}playing=false;playingEl=null;clearMarks();done();};
+      src=srcB;srcB.start();
+      st("Đang phát dòng "+(it.i+1)+"/"+items().length,"ok");
+    }catch(e){
+      stopAll();
+      st("Dòng "+(it.i+1)+" ("+vLabel(it.voice)+"): "+(e.message||"Lỗi."),"err");
+      done(); // bỏ qua dòng lỗi, đi tiếp
+    }finally{busy=false;}
+  }else{
+    if(!window.speechSynthesis){st("Thiết bị không hỗ trợ đọc.","err");done();return;}
+    speakSeq(it,done);
+  }
+}
+function speakSeq(it,done){
+  clearMarks();playing=true;playingEl=it.el;it.el.classList.add("active");
+  const u=new SpeechSynthesisUtterance(it.spoken),v=speechVoice();
+  if(v){u.voice=v;u.lang=v.lang;}else u.lang=LT[lang];
+  u.rate=Math.max(.1,Math.min(10,1+parseInt(rateEl.value,10)/100));
+  u.pitch=Math.max(0,Math.min(2,1+parseInt(pitchEl.value,10)/100));
+  u.volume=Math.min(1,(parseInt(volEl.value,10)||100)/100);
+  let fired=false;
+  const finish=()=>{if(fired)return;fired=true;playing=false;playingEl=null;clearMarks();done();};
+  u.onend=finish;
+  u.onerror=e=>{if(e.error==="canceled"||e.error==="interrupted")return;finish();};
+  try{speechSynthesis.speak(u);}catch(e){finish();}
 }
 
 /* ===== download / pregen ===== */
@@ -596,6 +667,8 @@ workerEl.oninput=()=>{
 $("#testBtn").onclick=()=>testVoices("lang");
 $("#testAllBtn").onclick=()=>testVoices("all");
 $("#resetTestBtn").onclick=()=>{vstat={};saveStat();refreshVoices();st("Đã xoá kết quả kiểm tra giọng.");};
+$("#playAllBtn").onclick=()=>playAll(false);
+$("#loopAllBtn").onclick=()=>playAll(true);
 $("#pregenBtn").onclick=()=>batch(false);
 $("#dlAllBtn").onclick=()=>batch(true);
 $("#stopBtn").onclick=()=>{stopAll();st("Đã dừng.");};
