@@ -102,6 +102,19 @@ details a{color:var(--accent-2)}details b{color:var(--text)}
       <label class="toggle"><input type="checkbox" id="hideBad"><span class="knob"></span><span>Ẩn giọng lỗi ❌</span></label>
     </div>
     <label class="toggle mt" id="rotateRow" style="display:none"><input type="checkbox" id="voiceRotate"><span class="knob"></span><span>🔄 Nhiều giọng (xen kẽ nữ/nam, hoặc theo tag "A:" / "B:")</span></label>
+    <div id="rotatePicks" class="mt" style="display:none">
+      <div class="row">
+        <div>
+          <label class="label" for="voiceF">Giọng nữ (dòng chẵn / tag Female/A)</label>
+          <select id="voiceF"></select>
+        </div>
+        <div>
+          <label class="label" for="voiceM">Giọng nam (dòng lẻ / tag Male/B)</label>
+          <select id="voiceM"></select>
+        </div>
+      </div>
+      <div class="hint">Để trống = tự động chọn theo danh sách. Chỉ hiện các giọng cùng vùng với giọng đang chọn.</div>
+    </div>
   </div>
 
   <div class="card">
@@ -141,7 +154,7 @@ details a{color:var(--accent-2)}details b{color:var(--text)}
     <p><b>Tô màu:</b> bôi đen đoạn chữ → chọn màu ở thanh nổi. Nút <b>Nền/Chữ</b> đổi giữa tô nền và đổi màu chữ; <b>+</b> thêm màu riêng; <b>✕</b> xoá định dạng đoạn đã chọn. Màu được lưu lại.</p>
     <p><b>Phát:</b> ▶ phát 1 lần, 🔁 lặp vô hạn, bấm lại để dừng. ⬇ tải MP3 (cần Worker).</p>
     <p><b>Kiểm tra giọng:</b> 🩺 đọc thử một từ bằng từng giọng. ✅ = hoạt động, ❌ = lỗi, không dấu = chưa kiểm tra. Kết quả được lưu; giọng ❌ bị loại khỏi chế độ xen kẽ. Bấm lại nút khi đang chạy để dừng.</p>
-    <p><b>Nhiều giọng:</b> bật công tắc (cần Worker). Chỉ xen kẽ giọng cùng vùng với giọng đang chọn (ví dụ US). Nếu các dòng bắt đầu bằng "A:" / "B:", mỗi tag giữ một giọng riêng và tag không được đọc ra.</p>
+    <p><b>Nhiều giọng:</b> bật công tắc (cần Worker). Chọn giọng nữ và giọng nam cụ thể; dòng chẵn đọc bằng giọng nữ, dòng lẻ bằng giọng nam. Tag hỗ trợ nhiều dạng: <code>A (Male): "..."</code>, <code>B (Female): "..."</code>, <code>a: turn 1</code>, <code>b: turn 2</code>. Nếu tag ghi rõ giới tính (Male/Female/nam/nữ) thì dùng đúng giọng đã chọn; nếu không thì xen kẽ theo thứ tự tag. Tag và dấu ngoặc kép không được đọc ra.</p>
     <p><b>Tạo Worker:</b> <a href="https://dash.cloudflare.com" target="_blank">dash.cloudflare.com</a> → Workers → Create → dán <code>worker.js</code> → Deploy → copy URL.</p>
   </details>
 </div>
@@ -180,11 +193,19 @@ let MS=BASE,srcNote="Danh sách dựng sẵn";
 const $=s=>document.querySelector(s);
 const ed=$("#editor"),voiceEl=$("#voice"),workerEl=$("#worker"),statusEl=$("#status"),hl=$("#hlbar");
 const volEl=$("#vol"),rateEl=$("#rate"),pitchEl=$("#pitch"),gapEl=$("#gap"),limEl=$("#limiter"),rotEl=$("#voiceRotate"),hideEl=$("#hideBad");
+const voiceFEl=$("#voiceF"),voiceMEl=$("#voiceM"),rotatePicks=$("#rotatePicks");
 const dlProg=$("#dlProgress"),dlBar=$("#dlBar");
 let lang="en",speechVoices=[],audioCtx,gain,lim,src,timer,speechOn=false,busy=false,playing=false,playingEl=null,rotate=false;
 let colors=["#ffeb3b","#ff8a80","#80cbc4","#ffab91","#b39ddb","#7CFC00"],hlMode="bg",saveT,liveT;
 let vstat={},testing=false,abortT=false;
-const SPK=/^\s*([^\s:：][^:：]{0,17})\s*[:：]\s+(\S.*)$/;
+
+/* Regex tag linh hoạt:
+   - tag: A, B, a, b, hoặc "A (Male)", "B (Female)", "Nam", "Nữ"...
+   - theo sau là : hoặc ：
+   - nội dung có thể có hoặc không có dấu " bao quanh
+   group 1 = tag, group 2 = nội dung sạch */
+const SPK=/^\s*([A-Za-zÀ-ỹ][A-Za-zÀ-ỹ0-9 _\-]*?(?:\s*\([^)]*\))?)\s*[:：]\s*["""'“”]?(.+?)["""'“”]?\s*$/;
+
 const workerUrl=()=>(workerEl.value||"").trim().replace(/\/+$/,"");
 const isEdge=()=>!!workerUrl();
 const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
@@ -273,19 +294,50 @@ document.addEventListener("selectionchange",()=>{
 /* ===== voices & rotation ===== */
 function resolve(its){
   const edge=isEdge(),tags=[];
-  its.forEach(it=>{const m=it.raw.match(SPK);it.tag=m?m[1].trim():null;if(it.tag&&!tags.includes(it.tag))tags.push(it.tag);});
+  its.forEach(it=>{
+    const m=it.raw.match(SPK);
+    it.tag=m?m[1].trim():null;
+    if(it.tag&&!tags.includes(it.tag))tags.push(it.tag);
+  });
   const spk=edge&&rotate&&tags.length>=2&&tags.length<=10&&its.filter(x=>x.tag).length/Math.max(1,its.length)>=.5;
   // bỏ giọng lỗi, ưu tiên cùng vùng với giọng đang chọn
   let vs=(MS[lang]||[]).filter(v=>vstat[v.id]!==0);
   const loc=(voiceEl.value||"").slice(0,5),same=vs.filter(v=>v.id.startsWith(loc));
   if(same.length>=2)vs=same;
   const f=vs.filter(v=>/Female/.test(v.label)),m=vs.filter(v=>/Male/.test(v.label)&&!/Female/.test(v.label));
+  // giọng đã chọn (nếu có và hợp lệ) thì ưu tiên, không thì fallback
+  const pickF=voiceFEl.value,pickM=voiceMEl.value;
+  const fOK=f.some(v=>v.id===pickF)?pickF:null;
+  const mOK=m.some(v=>v.id===pickM)?pickM:null;
   const pool=[];for(let k=0;k<Math.max(f.length,m.length);k++){if(f[k])pool.push(f[k].id);if(m[k])pool.push(m[k].id);}
+
+  // xác định giới tính ghi trong tag (nếu có)
+  const tagSex=t=>{
+    if(!t)return null;
+    const s=t.toLowerCase();
+    if(/\bfemale\b|\bwoman\b|\bgirl\b|\bnữ\b|\bnu\b/.test(s))return "F";
+    if(/\bmale\b|\bman\b|\bboy\b|\bnam\b/.test(s))return "M";
+    return null;
+  };
+
   its.forEach(it=>{
     if(!edge||!rotate||!pool.length){it.voice=voiceEl.value;return;}
-    if(spk&&it.tag){it.voice=pool[tags.indexOf(it.tag)%pool.length];it.spoken=it.raw.match(SPK)[2];return;}
-    const arr=it.i%2===0?(f.length?f:m):(m.length?m:f);
-    it.voice=arr[Math.floor(it.i/2)%arr.length].id;
+    if(spk&&it.tag){
+      const idx=tags.indexOf(it.tag);
+      const sex=tagSex(it.tag);
+      // 1) tag ghi rõ giới tính → dùng giọng đã chọn tương ứng
+      if(sex==="F"&&fOK){it.voice=fOK;it.spoken=it.raw.match(SPK)[2];return;}
+      if(sex==="M"&&mOK){it.voice=mOK;it.spoken=it.raw.match(SPK)[2];return;}
+      // 2) không ghi giới tính → xen kẽ theo thứ tự tag
+      it.voice=(idx%2===0)
+        ? (fOK||pool[idx%pool.length])
+        : (mOK||pool[idx%pool.length]);
+      it.spoken=it.raw.match(SPK)[2];return;
+    }
+    // dòng chẵn → nữ, dòng lẻ → nam
+    it.voice=(it.i%2===0)
+      ? (fOK||(f.length?f[Math.floor(it.i/2)%f.length].id:m[Math.floor(it.i/2)%m.length].id))
+      : (mOK||(m.length?m[Math.floor(it.i/2)%m.length].id:f[Math.floor(it.i/2)%f.length].id));
   });
   return its;
 }
@@ -496,8 +548,23 @@ function refreshVoices(){
   }
   if(prev&&[...voiceEl.options].some(o=>o.value===prev))voiceEl.value=prev;
   saved[key]=voiceEl.value;
+
+  // điền 2 ô chọn giọng nữ/nam (cùng vùng với giọng đang chọn)
+  const loc2=(voiceEl.value||"").slice(0,5);
+  let vsAll=(MS[lang]||[]).filter(v=>vstat[v.id]!==0&&v.id.startsWith(loc2));
+  if(vsAll.length<2)vsAll=(MS[lang]||[]).filter(v=>vstat[v.id]!==0);
+  const fill=(sel,arr)=>{
+    const p=sel.value;sel.innerHTML="";
+    const o0=document.createElement("option");o0.value="";o0.textContent="(tự động)";sel.appendChild(o0);
+    arr.forEach(v=>{const o=document.createElement("option");o.value=v.id;o.textContent=v.label;sel.appendChild(o);});
+    if(p&&[...sel.options].some(o=>o.value===p))sel.value=p;
+  };
+  fill(voiceFEl,vsAll.filter(v=>/Female/.test(v.label)));
+  fill(voiceMEl,vsAll.filter(v=>/Male/.test(v.label)&&!/Female/.test(v.label)));
+
   $("#rotateRow").style.display=edge?"flex":"none";
   $("#vtools").style.display=edge?"block":"none";
+  rotatePicks.style.display=(edge&&rotate)?"block":"none";
 }
 function modeBadge(){
   $("#modeBadge").className="mode"+(isEdge()?" ms":"");
@@ -513,8 +580,8 @@ $("#langTabs").addEventListener("click",e=>{
   [...e.currentTarget.children].forEach(x=>x.classList.remove("active"));t.classList.add("active");
   stopAll();lang=t.dataset.lang;refreshVoices();
 });
-voiceEl.onchange=()=>{saved[lang+(isEdge()?"|ms":"|dev")]=voiceEl.value;if(playing){stopAll();st("Đã đổi giọng. Bấm ▶ để nghe lại.");}};
-rotEl.onchange=()=>{rotate=rotEl.checked;stopAll();};
+voiceEl.onchange=()=>{saved[lang+(isEdge()?"|ms":"|dev")]=voiceEl.value;if(playing){stopAll();st("Đã đổi giọng. Bấm ▶ để nghe lại.");}refreshVoices();};
+rotEl.onchange=()=>{rotate=rotEl.checked;rotatePicks.style.display=(isEdge()&&rotate)?"block":"none";stopAll();};
 hideEl.onchange=()=>{try{localStorage.setItem("ttsloop_hidebad",hideEl.checked?"1":"0");}catch(e){}refreshVoices();};
 volEl.oninput=()=>{const v=parseInt(volEl.value,10);$("#volVal").textContent=v+"%";$("#volVal").classList.toggle("boost",v>100);vol();volHint();};
 rateEl.oninput=()=>{const v=parseInt(rateEl.value,10);$("#rateVal").textContent=(v>=0?"+":"")+v+"%";};
@@ -547,6 +614,12 @@ try{const s=JSON.parse(localStorage.getItem("ttsloop_vstat")||"null");if(s&&type
 try{hideEl.checked=localStorage.getItem("ttsloop_hidebad")==="1";}catch(e){}
 renderHl();modeBadge();volHint();refreshVoices();normalize();
 loadLive().then(refreshVoices);
+
+// khôi phục lựa chọn giọng nữ/nam + lưu khi đổi
+try{const f=localStorage.getItem("ttsloop_voiceF");if(f)voiceFEl.value=f;}catch(e){}
+try{const m=localStorage.getItem("ttsloop_voiceM");if(m)voiceMEl.value=m;}catch(e){}
+voiceFEl.onchange=()=>{try{localStorage.setItem("ttsloop_voiceF",voiceFEl.value);}catch(e){}if(playing)stopAll();};
+voiceMEl.onchange=()=>{try{localStorage.setItem("ttsloop_voiceM",voiceMEl.value);}catch(e){}if(playing)stopAll();};
 })();
 </script>
 </body>
