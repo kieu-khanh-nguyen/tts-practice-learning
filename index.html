@@ -52,8 +52,10 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;bac
 .status.err{color:var(--bad)}.status.ok{color:var(--good)}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--accent-2);animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+.vtools{display:none;margin-top:12px}
+.vsum{font-size:12px;color:var(--muted);margin:10px 0 12px;line-height:1.6}
+.vsum b{color:var(--text)}
 
-/* ——— the one-panel editor ——— */
 #editor{min-height:300px;max-height:70dvh;overflow-y:auto;border-radius:14px;background:#0e1118;border:1px solid var(--line);padding:14px;font-size:16px;line-height:1.75;outline:none;white-space:pre-wrap;word-break:break-word}
 #editor:focus{border-color:var(--accent)}
 #editor>div{padding:1px 6px;border-radius:8px;border:1px solid transparent;transition:background .15s}
@@ -90,6 +92,15 @@ details a{color:var(--accent-2)}details b{color:var(--text)}
       <div class="ltab active" data-lang="en">🇬🇧 EN</div><div class="ltab" data-lang="vi">🇻🇳 VI</div><div class="ltab" data-lang="ja">🇯🇵 JA</div><div class="ltab" data-lang="ko">🇰🇷 KO</div><div class="ltab" data-lang="zh">🇨🇳 ZH</div><div class="ltab" data-lang="fr">🇫🇷 FR</div><div class="ltab" data-lang="es">🇪🇸 ES</div><div class="ltab" data-lang="de">🇩🇪 DE</div>
     </div>
     <div class="mt"><label class="label" for="voice">Giọng đọc</label><select id="voice"></select></div>
+    <div class="vtools" id="vtools">
+      <div class="vsum" id="vsum"></div>
+      <div class="toolbar" style="margin-bottom:10px">
+        <button class="tbtn a" id="testBtn">🩺 Kiểm tra giọng (ngôn ngữ này)</button>
+        <button class="tbtn" id="testAllBtn">🩺 Kiểm tra tất cả</button>
+        <button class="tbtn" id="resetTestBtn">↺ Xoá kết quả</button>
+      </div>
+      <label class="toggle"><input type="checkbox" id="hideBad"><span class="knob"></span><span>Ẩn giọng lỗi ❌</span></label>
+    </div>
     <label class="toggle mt" id="rotateRow" style="display:none"><input type="checkbox" id="voiceRotate"><span class="knob"></span><span>🔄 Nhiều giọng (xen kẽ nữ/nam, hoặc theo tag "A:" / "B:")</span></label>
   </div>
 
@@ -121,7 +132,7 @@ details a{color:var(--accent-2)}details b{color:var(--text)}
   <div class="card">
     <label class="label" for="worker">Microsoft Neural Worker (tuỳ chọn)</label>
     <input type="text" id="worker" placeholder="https://your-worker-name.workers.dev" autocomplete="off" autocapitalize="off" spellcheck="false">
-    <div class="hint">Để trống = giọng của thiết bị. Dán URL Worker để mở Microsoft Neural + tải MP3 + âm lượng &gt;100%.</div>
+    <div class="hint">Để trống = giọng của thiết bị. Dán URL Worker để mở Microsoft Neural + tải MP3 + âm lượng &gt;100% + kiểm tra giọng.</div>
   </div>
 
   <details>
@@ -129,7 +140,8 @@ details a{color:var(--accent-2)}details b{color:var(--text)}
     <p><b>Sửa:</b> gõ trực tiếp trong khung. <b>Enter</b> = tách câu, <b>Backspace</b> đầu dòng = gộp câu.</p>
     <p><b>Tô màu:</b> bôi đen đoạn chữ → chọn màu ở thanh nổi. Nút <b>Nền/Chữ</b> đổi giữa tô nền và đổi màu chữ; <b>+</b> thêm màu riêng; <b>✕</b> xoá định dạng đoạn đã chọn. Màu được lưu lại.</p>
     <p><b>Phát:</b> ▶ phát 1 lần, 🔁 lặp vô hạn, bấm lại để dừng. ⬇ tải MP3 (cần Worker).</p>
-    <p><b>Nhiều giọng:</b> bật công tắc (cần Worker). Nếu các dòng bắt đầu bằng "A:" / "B:", mỗi tag giữ một giọng riêng và tag không được đọc ra.</p>
+    <p><b>Kiểm tra giọng:</b> 🩺 đọc thử một từ bằng từng giọng. ✅ = hoạt động, ❌ = lỗi, không dấu = chưa kiểm tra. Kết quả được lưu; giọng ❌ bị loại khỏi chế độ xen kẽ. Bấm lại nút khi đang chạy để dừng.</p>
+    <p><b>Nhiều giọng:</b> bật công tắc (cần Worker). Chỉ xen kẽ giọng cùng vùng với giọng đang chọn (ví dụ US). Nếu các dòng bắt đầu bằng "A:" / "B:", mỗi tag giữ một giọng riêng và tag không được đọc ra.</p>
     <p><b>Tạo Worker:</b> <a href="https://dash.cloudflare.com" target="_blank">dash.cloudflare.com</a> → Workers → Create → dán <code>worker.js</code> → Deploy → copy URL.</p>
   </details>
 </div>
@@ -139,24 +151,39 @@ details a{color:var(--accent-2)}details b{color:var(--text)}
 <script>
 (()=>{
 "use strict";
-const MS={
- en:[["en-US-AriaNeural","Aria · Female (US)"],["en-US-JennyNeural","Jenny · Female (US)"],["en-US-GuyNeural","Guy · Male (US)"],["en-US-DavisNeural","Davis · Male (US)"],["en-US-ChristopherNeural","Christopher · Male (US)"],["en-GB-SoniaNeural","Sonia · Female (UK)"],["en-GB-LibbyNeural","Libby · Female (UK)"],["en-GB-RyanNeural","Ryan · Male (UK)"],["en-AU-NatashaNeural","Natasha · Female (AU)"],["en-AU-WilliamNeural","William · Male (AU)"],["en-IN-NeerjaNeural","Neerja · Female (IN)"],["en-IN-PrabhatNeural","Prabhat · Male (IN)"]],
- vi:[["vi-VN-HoaiMyNeural","Hoài My · Female"],["vi-VN-NamMinhNeural","Nam Minh · Male"]],
- ja:[["ja-JP-NanamiNeural","Nanami · Female"],["ja-JP-AoiNeural","Aoi · Female"],["ja-JP-KeitaNeural","Keita · Male"],["ja-JP-DaichiNeural","Daichi · Male"]],
- ko:[["ko-KR-SunHiNeural","SunHi · Female"],["ko-KR-InJoonNeural","InJoon · Male"]],
- zh:[["zh-CN-XiaoxiaoNeural","Xiaoxiao · Female"],["zh-CN-XiaoyiNeural","Xiaoyi · Female"],["zh-CN-YunxiNeural","Yunxi · Male"],["zh-CN-YunjianNeural","Yunjian · Male"]],
- fr:[["fr-FR-DeniseNeural","Denise · Female (FR)"],["fr-FR-HenriNeural","Henri · Male (FR)"],["fr-CA-SylvieNeural","Sylvie · Female (CA)"],["fr-CA-ThierryNeural","Thierry · Male (CA)"]],
- es:[["es-ES-ElviraNeural","Elvira · Female (ES)"],["es-ES-AlvaroNeural","Alvaro · Male (ES)"],["es-MX-DaliaNeural","Dalia · Female (MX)"],["es-MX-JorgeNeural","Jorge · Male (MX)"]],
- de:[["de-DE-KatjaNeural","Katja · Female (DE)"],["de-DE-ConradNeural","Conrad · Male (DE)"],["de-AT-IngridNeural","Ingrid · Female (AT)"],["de-AT-JonasNeural","Jonas · Male (AT)"]]
+/* ===== voice catalog (built-in fallback). Format: "locale|F:names|M:names" ===== */
+const RAW={
+ en:["en-US|F:Aria,Jenny,Michelle,Emma,Ava,Ana,EmmaMultilingual,AvaMultilingual|M:Guy,Davis,Christopher,Eric,Andrew,Brian,Roger,Steffan,AndrewMultilingual,BrianMultilingual",
+  "en-GB|F:Sonia,Libby,Maisie|M:Ryan,Thomas","en-AU|F:Natasha|M:William","en-CA|F:Clara|M:Liam","en-IN|F:Neerja|M:Prabhat","en-IE|F:Emily|M:Connor",
+  "en-NZ|F:Molly|M:Mitchell","en-SG|F:Luna|M:Wayne","en-ZA|F:Leah|M:Luke","en-HK|F:Yan|M:Sam","en-KE|F:Asilia|M:Chilemba","en-NG|F:Ezinne|M:Abeo","en-PH|F:Rosa|M:James","en-TZ|F:Imani|M:Elimu"],
+ vi:["vi-VN|F:HoaiMy|M:NamMinh"],
+ ja:["ja-JP|F:Nanami,Aoi,Mayu,Shiori|M:Keita,Daichi,Naoki"],
+ ko:["ko-KR|F:SunHi,JiMin,SeoHyeon,SoonBok,YuJin|M:InJoon,BongJin,GookMin,Hyunsu"],
+ zh:["zh-CN|F:Xiaoxiao,Xiaoyi,liaoning-Xiaobei,shaanxi-Xiaoni|M:Yunxi,Yunjian,Yunyang,Yunxia","zh-TW|F:HsiaoChen,HsiaoYu|M:YunJhe","zh-HK|F:HiuGaai,HiuMaan|M:WanLung"],
+ fr:["fr-FR|F:Denise,Eloise,VivienneMultilingual|M:Henri,RemyMultilingual","fr-CA|F:Sylvie|M:Thierry,Jean,Antoine","fr-BE|F:Charline|M:Gerard","fr-CH|F:Ariane|M:Fabrice"],
+ es:["es-ES|F:Elvira,Ximena|M:Alvaro","es-MX|F:Dalia|M:Jorge","es-AR|F:Elena|M:Tomas","es-CO|F:Salome|M:Gonzalo","es-US|F:Paloma|M:Alonso","es-CL|F:Catalina|M:Lorenzo","es-PE|F:Camila|M:Alex","es-VE|F:Paola|M:Sebastian","es-UY|F:Valentina|M:Mateo","es-CU|F:Belkys|M:Manuel","es-BO|F:Sofia|M:Marcelo","es-CR|F:Maria|M:Juan","es-DO|F:Ramona|M:Emilio","es-EC|F:Andrea|M:Luis","es-GT|F:Marta|M:Andres","es-HN|F:Karla|M:Carlos","es-NI|F:Yolanda|M:Federico","es-PA|F:Margarita|M:Roberto","es-PY|F:Tania|M:Mario","es-SV|F:Lorena|M:Rodrigo","es-PR|F:Karina|M:Victor"],
+ de:["de-DE|F:Katja,Amala,SeraphinaMultilingual|M:Conrad,Killian,Kasper,FlorianMultilingual","de-AT|F:Ingrid|M:Jonas","de-CH|F:Leni|M:Jan"]
 };
-Object.keys(MS).forEach(k=>MS[k]=MS[k].map(v=>({id:v[0],label:v[1]})));
+const SAMPLE={en:"Hello.",vi:"Xin chào.",ja:"こんにちは。",ko:"안녕하세요.",zh:"你好。",fr:"Bonjour.",es:"Hola.",de:"Hallo."};
 const LT={en:"en-US",vi:"vi-VN",ja:"ja-JP",ko:"ko-KR",zh:"zh-CN",fr:"fr-FR",es:"es-ES",de:"de-DE"};
+const nice=n=>n.replace(/([a-z])([A-Z])/g,"$1 $2");
+function build(raw){
+  const o={};
+  for(const k in raw){o[k]=[];raw[k].forEach(s=>{const p=s.split("|"),loc=p[0];
+    p.slice(1).forEach(g=>{const sex=g[0]==="F"?"Female":"Male";
+      g.slice(2).split(",").forEach(n=>o[k].push({id:loc+"-"+n+"Neural",label:nice(n)+" · "+sex+" ("+loc.slice(3)+")"}));});});}
+  return o;
+}
+const BASE=build(RAW);
+let MS=BASE,srcNote="Danh sách dựng sẵn";
+
 const $=s=>document.querySelector(s);
 const ed=$("#editor"),voiceEl=$("#voice"),workerEl=$("#worker"),statusEl=$("#status"),hl=$("#hlbar");
-const volEl=$("#vol"),rateEl=$("#rate"),pitchEl=$("#pitch"),gapEl=$("#gap"),limEl=$("#limiter"),rotEl=$("#voiceRotate");
+const volEl=$("#vol"),rateEl=$("#rate"),pitchEl=$("#pitch"),gapEl=$("#gap"),limEl=$("#limiter"),rotEl=$("#voiceRotate"),hideEl=$("#hideBad");
 const dlProg=$("#dlProgress"),dlBar=$("#dlBar");
 let lang="en",speechVoices=[],audioCtx,gain,lim,src,timer,speechOn=false,busy=false,playing=false,playingEl=null,rotate=false;
-let colors=["#ffeb3b","#ff8a80","#80cbc4","#ffab91","#b39ddb","#7CFC00"],hlMode="bg",saveT;
+let colors=["#ffeb3b","#ff8a80","#80cbc4","#ffab91","#b39ddb","#7CFC00"],hlMode="bg",saveT,liveT;
+let vstat={},testing=false,abortT=false;
 const SPK=/^\s*([^\s:：][^:：]{0,17})\s*[:：]\s+(\S.*)$/;
 const workerUrl=()=>(workerEl.value||"").trim().replace(/\/+$/,"");
 const isEdge=()=>!!workerUrl();
@@ -171,7 +198,6 @@ function makeCtl(){const s=document.createElement("span");s.className="ctl";s.co
 function normalize(){
   if(!ed.firstChild)ed.innerHTML="<div><br></div>";
   [...ed.childNodes].forEach(n=>{if(n.nodeType===3||(n.nodeType===1&&n.tagName!=="DIV")){const d=document.createElement("div");n.replaceWith(d);d.appendChild(n);}});
-  // Mỗi lần xuống dòng (\n hoặc <br>) = một đoạn riêng; dòng trống chỉ để cách đoạn
   [...ed.children].forEach(d=>{
     if(!d.textContent.trim())return;
     const c=d.cloneNode(true);c.querySelectorAll(".ctl").forEach(x=>x.remove());
@@ -249,7 +275,10 @@ function resolve(its){
   const edge=isEdge(),tags=[];
   its.forEach(it=>{const m=it.raw.match(SPK);it.tag=m?m[1].trim():null;if(it.tag&&!tags.includes(it.tag))tags.push(it.tag);});
   const spk=edge&&rotate&&tags.length>=2&&tags.length<=10&&its.filter(x=>x.tag).length/Math.max(1,its.length)>=.5;
-  const vs=MS[lang]||[];
+  // bỏ giọng lỗi, ưu tiên cùng vùng với giọng đang chọn
+  let vs=(MS[lang]||[]).filter(v=>vstat[v.id]!==0);
+  const loc=(voiceEl.value||"").slice(0,5),same=vs.filter(v=>v.id.startsWith(loc));
+  if(same.length>=2)vs=same;
   const f=vs.filter(v=>/Female/.test(v.label)),m=vs.filter(v=>/Male/.test(v.label)&&!/Female/.test(v.label));
   const pool=[];for(let k=0;k<Math.max(f.length,m.length);k++){if(f[k])pool.push(f[k].id);if(m[k])pool.push(m[k].id);}
   its.forEach(it=>{
@@ -260,7 +289,7 @@ function resolve(its){
   });
   return its;
 }
-const vLabel=id=>{const v=(MS[lang]||[]).find(x=>x.id===id);return v?v.label.split("·")[0].trim():id;};
+const vLabel=id=>{for(const k in MS){const v=MS[k].find(x=>x.id===id);if(v)return v.label.split("·")[0].trim();}return id;};
 
 /* ===== audio ===== */
 function ensureAudio(){
@@ -291,7 +320,9 @@ async function ensureClip(meta){
   const rec=await idbGet(key);
   if(rec&&rec.mp3){try{const buffer=await audioCtx.decodeAudioData(rec.mp3.slice(0));const e={mp3:rec.mp3,buffer};mem.set(key,e);return e;}catch(e){}}
   const mp3=await synth(meta),buffer=await audioCtx.decodeAudioData(mp3.slice(0)),e={mp3,buffer};
-  mem.set(key,e);idbPut({key,mp3,meta,ts:Date.now()});return e;
+  mem.set(key,e);idbPut({key,mp3,meta,ts:Date.now()});
+  if(vstat[meta.voice]!==1){vstat[meta.voice]=1;saveStat();}
+  return e;
 }
 
 /* ===== playback ===== */
@@ -391,18 +422,82 @@ async function batch(merge){
   finally{busy=false;setTimeout(()=>{dlProg.style.display="none";dlBar.style.width="0";},600);}
 }
 
+/* ===== voice health check ===== */
+function saveStat(){try{localStorage.setItem("ttsloop_vstat",JSON.stringify(vstat));}catch(e){}}
+function summary(){
+  const vs=MS[lang]||[];let ok=0,bad=0;
+  vs.forEach(v=>{if(vstat[v.id]===1)ok++;else if(vstat[v.id]===0)bad++;});
+  $("#vsum").innerHTML=srcNote+" · <b>"+vs.length+"</b> giọng · ✅ <b>"+ok+"</b> · ❌ <b>"+bad+"</b> · chưa kiểm tra <b>"+(vs.length-ok-bad)+"</b>";
+}
+async function testVoices(scope){
+  if(!isEdge()){st("Kiểm tra giọng cần Microsoft Neural (dán URL Worker).","err");return;}
+  if(testing){abortT=true;return;}
+  testing=true;abortT=false;
+  const list=scope==="all"?Object.keys(MS).flatMap(k=>MS[k].map(v=>({v,k}))):(MS[lang]||[]).map(v=>({v,k:lang}));
+  const prev=JSON.stringify(vstat),total=list.length;
+  let idx=0,done=0,ok=0,bad=0;
+  dlProg.style.display="block";dlBar.style.width="0";
+  $("#testBtn").textContent="■ Dừng kiểm tra";$("#testAllBtn").textContent="■ Dừng kiểm tra";
+  const run=async()=>{
+    while(!abortT&&idx<total){
+      const {v,k}=list[idx++];let good=false;
+      try{
+        const r=await fetch(workerUrl()+"?text="+encodeURIComponent(SAMPLE[k]||"Hello.")+"&voice="+encodeURIComponent(v.id)+"&rate=0&pitch=0");
+        if(r.ok){const b=await r.arrayBuffer();good=b.byteLength>=200;}
+      }catch(e){}
+      vstat[v.id]=good?1:0;good?ok++:bad++;done++;
+      dlBar.style.width=(done/total*100)+"%";
+      st("Đang kiểm tra "+done+"/"+total+" · ✅ "+ok+" · ❌ "+bad+"…","",true);
+    }
+  };
+  await Promise.all([run(),run(),run()]);
+  const stopped=abortT;
+  if(ok===0&&bad>0){
+    vstat=JSON.parse(prev);
+    st("Tất cả "+bad+" giọng đều lỗi — nhiều khả năng Worker hoặc Microsoft đang lỗi (thử /debug trên Worker). Kết quả không được lưu.","err");
+  }else{
+    saveStat();
+    st((stopped?"Đã dừng. ":"Xong. ")+"✅ "+ok+" hoạt động · ❌ "+bad+" lỗi (đã kiểm tra "+done+"/"+total+").",bad?"":"ok");
+  }
+  testing=false;abortT=false;
+  $("#testBtn").textContent="🩺 Kiểm tra giọng (ngôn ngữ này)";$("#testAllBtn").textContent="🩺 Kiểm tra tất cả";
+  refreshVoices();
+  setTimeout(()=>{dlProg.style.display="none";dlBar.style.width="0";},600);
+}
+
+/* ===== live voice list from Worker (/voices) ===== */
+async function loadLive(){
+  MS=BASE;srcNote="Danh sách dựng sẵn";
+  if(!isEdge())return;
+  try{
+    const r=await fetch(workerUrl()+"/voices");if(!r.ok)return;
+    const j=await r.json(),o={};let n=0;
+    j.forEach(v=>{
+      const k=(v.Locale||"").slice(0,2);if(!RAW[k]||!/Neural$/.test(v.ShortName))return;
+      const nm=v.ShortName.split("-").slice(2).join("-").replace(/Neural$/,"");
+      (o[k]=o[k]||[]).push({id:v.ShortName,label:nice(nm)+" · "+v.Gender+" ("+v.Locale.slice(3)+")"});n++;
+    });
+    if(n>20){Object.keys(o).forEach(k=>o[k].sort((a,b)=>a.id.localeCompare(b.id)));MS=Object.assign({},BASE,o);srcNote="Danh sách live từ Microsoft";}
+  }catch(e){}
+}
+
 /* ===== settings UI ===== */
 function loadSpeech(){try{speechVoices=window.speechSynthesis?speechSynthesis.getVoices():[];}catch(e){speechVoices=[];}}
 const saved={};
 function refreshVoices(){
-  const key=lang+(isEdge()?"|ms":"|dev"),prev=saved[key]||"";voiceEl.innerHTML="";
+  const edge=isEdge(),key=lang+(edge?"|ms":"|dev"),prev=saved[key]||voiceEl.value||"";voiceEl.innerHTML="";
   const add=(v,t)=>{const o=document.createElement("option");o.value=v;o.textContent=t;voiceEl.appendChild(o);};
-  if(isEdge())(MS[lang]||[]).forEach(v=>add(v.id,v.label));
-  else{const vs=speechVoices.filter(v=>(v.lang||"").toLowerCase().startsWith(lang));
-    if(!vs.length)add("","(không có giọng cho ngôn ngữ này)");vs.forEach(v=>add(v.name,v.name+(v.localService?"":" · online")));}
+  if(edge){
+    (MS[lang]||[]).filter(v=>!(hideEl.checked&&vstat[v.id]===0)).forEach(v=>add(v.id,(vstat[v.id]===1?"✅ ":vstat[v.id]===0?"❌ ":"")+v.label));
+    summary();
+  }else{
+    const vs=speechVoices.filter(v=>(v.lang||"").toLowerCase().startsWith(lang));
+    if(!vs.length)add("","(không có giọng cho ngôn ngữ này)");vs.forEach(v=>add(v.name,v.name+(v.localService?"":" · online")));
+  }
   if(prev&&[...voiceEl.options].some(o=>o.value===prev))voiceEl.value=prev;
   saved[key]=voiceEl.value;
-  $("#rotateRow").style.display=isEdge()?"flex":"none";
+  $("#rotateRow").style.display=edge?"flex":"none";
+  $("#vtools").style.display=edge?"block":"none";
 }
 function modeBadge(){
   $("#modeBadge").className="mode"+(isEdge()?" ms":"");
@@ -420,12 +515,20 @@ $("#langTabs").addEventListener("click",e=>{
 });
 voiceEl.onchange=()=>{saved[lang+(isEdge()?"|ms":"|dev")]=voiceEl.value;if(playing){stopAll();st("Đã đổi giọng. Bấm ▶ để nghe lại.");}};
 rotEl.onchange=()=>{rotate=rotEl.checked;stopAll();};
+hideEl.onchange=()=>{try{localStorage.setItem("ttsloop_hidebad",hideEl.checked?"1":"0");}catch(e){}refreshVoices();};
 volEl.oninput=()=>{const v=parseInt(volEl.value,10);$("#volVal").textContent=v+"%";$("#volVal").classList.toggle("boost",v>100);vol();volHint();};
 rateEl.oninput=()=>{const v=parseInt(rateEl.value,10);$("#rateVal").textContent=(v>=0?"+":"")+v+"%";};
 pitchEl.oninput=()=>{const v=parseInt(pitchEl.value,10);$("#pitchVal").textContent=(v>=0?"+":"")+v;};
 gapEl.oninput=()=>{$("#gapVal").textContent=parseFloat(gapEl.value).toFixed(1)+"s";};
 limEl.onchange=()=>{if(audioCtx)chain();};
-workerEl.oninput=()=>{try{localStorage.setItem("ttsloop_worker",workerEl.value.trim());}catch(e){}stopAll();modeBadge();refreshVoices();volHint();};
+workerEl.oninput=()=>{
+  try{localStorage.setItem("ttsloop_worker",workerEl.value.trim());}catch(e){}
+  stopAll();MS=BASE;srcNote="Danh sách dựng sẵn";modeBadge();refreshVoices();volHint();
+  clearTimeout(liveT);liveT=setTimeout(async()=>{await loadLive();refreshVoices();},700);
+};
+$("#testBtn").onclick=()=>testVoices("lang");
+$("#testAllBtn").onclick=()=>testVoices("all");
+$("#resetTestBtn").onclick=()=>{vstat={};saveStat();refreshVoices();st("Đã xoá kết quả kiểm tra giọng.");};
 $("#pregenBtn").onclick=()=>batch(false);
 $("#dlAllBtn").onclick=()=>batch(true);
 $("#stopBtn").onclick=()=>{stopAll();st("Đã dừng.");};
@@ -440,7 +543,10 @@ if(window.speechSynthesis){loadSpeech();speechSynthesis.onvoiceschanged=()=>{loa
 try{const w=localStorage.getItem("ttsloop_worker");if(w)workerEl.value=w;}catch(e){}
 try{const c=JSON.parse(localStorage.getItem("ttsloop_colors")||"null");if(Array.isArray(c)&&c.length)colors=c;}catch(e){}
 try{const h=localStorage.getItem("ttsloop_html");if(h)ed.innerHTML=h;}catch(e){}
+try{const s=JSON.parse(localStorage.getItem("ttsloop_vstat")||"null");if(s&&typeof s==="object")vstat=s;}catch(e){}
+try{hideEl.checked=localStorage.getItem("ttsloop_hidebad")==="1";}catch(e){}
 renderHl();modeBadge();volHint();refreshVoices();normalize();
+loadLive().then(refreshVoices);
 })();
 </script>
 </body>
